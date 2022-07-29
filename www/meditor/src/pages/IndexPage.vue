@@ -2,30 +2,13 @@
   <q-page class="flex justify-center">
     <q-card style="width: 98%;">
       <q-card-section>
-        <table border="1" class="font-geneikoburi">
-          <tr v-show="showComment">
-            <td class="tate tr-sound" v-for="piece in reverse(result.body.pieces)" :key="piece"><div v-html="[piece.comments,piece.sound_note,piece.sound_position].filter(v=> v != '').join('<br>')"></div></td>
-            <td class="tate tr-sound"><div>ト書き</div></td>
-          </tr>
-          <tr v-show="showChar">
-            <td class="tate tr-chara" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.charactor }}</div></td>
-            <td class="tate tr-chara"><div>人物</div></td>
-          </tr>
-          <tr v-show="showSerifu">
-            <td class="tate tr-serifu" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.dialogue }}</div></td>
-            <td class="tate tr-serifu"><div>セリフ</div></td>
-          </tr>
-          <tr v-show="showWordNum">
-            <td class="tr-count" style="text-align:center;" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.dialogue.length }}</div></td>
-            <td class="tate tr-count"><div>文字数</div></td>
-          </tr>
-        </table>
+        <PrintDaihon :pieces="result.body.pieces" :showConf="showConf"></PrintDaihon>
         <details>
           <summary>表示設定▼</summary>
-          <q-checkbox size="xs" label="ト書き" v-model="showComment"></q-checkbox>
-          <q-checkbox size="xs" label="人物" v-model="showChar"></q-checkbox>
-          <q-checkbox size="xs" label="セリフ" v-model="showSerifu"></q-checkbox>
-          <q-checkbox size="xs" label="文字数" v-model="showWordNum"></q-checkbox>
+          <q-checkbox size="xs" label="ト書き" v-model="showConf.showComment"></q-checkbox>
+          <q-checkbox size="xs" label="人物" v-model="showConf.showChara"></q-checkbox>
+          <q-checkbox size="xs" label="セリフ" v-model="showConf.showSerifu"></q-checkbox>
+          <q-checkbox size="xs" label="文字数" v-model="showConf.showWordNum"></q-checkbox>
         </details>
         <!--
         <div class="fit row reverse no-wrap justify-start items-start content-end" style="overflow-x: auto;">
@@ -107,7 +90,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import init, { parseMeSToJson } from 'mes/mes';
-
+import PrintDaihon from '../components/PrintDaihon.vue';
 
 interface MedoPiece {
   dialogue: string;
@@ -127,7 +110,7 @@ interface Medo {
 
 export default defineComponent({
   name: 'IndexPage',
-  components: { },
+  components: { PrintDaihon },
   setup () {
     
     const text = ref(`
@@ -177,16 +160,19 @@ export default defineComponent({
       var copy = arr.slice();
       return copy.reverse();
     }
+    const showConf = ref({
+      showChara: true,
+      showSerifu: true,
+      showWordNum: true,
+      showComment: true   
+    })
 
     return {
       text,
       parser,
       result,
       reverse,
-      showChar: ref(true),
-      showSerifu: ref(true),
-      showWordNum: ref(true),
-      showComment: ref(true)
+      showConf
     };
   }
 });
