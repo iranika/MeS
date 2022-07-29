@@ -2,6 +2,21 @@
   <q-page class="flex justify-center">
     <q-card style="width: 98%;">
       <q-card-section>
+        <table border="1">
+          <tr class="">
+            <td class="tate tr-sound" v-for="piece in reverse(result.body.pieces)" :key="piece"><div v-html="[piece.comments,piece.sound_note,piece.sound_position].filter(v=> v != '').join('<br>')"></div></td>
+            <td class="tate tr-sound"><div>ト書き</div></td>
+          </tr>
+          <tr class="">
+            <td class="tate tr-chara" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.charactor }}</div></td>
+            <td class="tate tr-chara"><div>人物</div></td>
+          </tr>
+          <tr class="tr-serifu">
+            <td class="tate tr-serifu" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.dialogue }}</div></td>
+            <td class="tate tr-serifu"><div>セリフ</div></td>
+          </tr>
+        </table>
+        <!--
         <div class="fit row reverse no-wrap justify-start items-start content-end" style="overflow-x: auto;">
           <div>
             <div class="tate tr-sound">ト書き</div>
@@ -16,6 +31,7 @@
             <div class="tr-count">{{ piece.dialogue.length }}</div>
           </div>
         </div>
+        -->
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
@@ -46,36 +62,24 @@
   max-height: 300px;
   width: 100%;
   overflow-wrap:normal;
-  border: 4px double black;
-  padding: 10px 2px;
-  resize: both;
 }
 .tr-chara{
   height: 100px;
   max-height: 300px;
   width: 100%;
   overflow-wrap: break-word;
-  border: 4px double black;
-  padding: 10px 2px;
-  resize: both;
 }
 .tr-count{
   height: 50px;
   max-height: 300px;
   width: 100%;
   overflow-wrap: break-word;
-  border: 4px double black;
-  padding: 10px 2px;
-  resize: both;
 }
 .tr-sound{
   height: 150px;
   max-height: 300px;
   width: 100%;
   overflow-wrap: break-word;
-  border: 4px double black;
-  padding: 10px 2px;
-  resize: both;
 }
 .tate {
   writing-mode: vertical-rl;
@@ -153,12 +157,10 @@ export default defineComponent({
       parser.value(text.value)
     })
 
-    function reverse(res: Medo){
-      if (res == <Medo>{}){
-        return []
-      }
-
-
+    function reverse<T>(arr: Array<T>):Array<T>{
+      if(arr.length === 0) return arr;
+      var copy = arr.slice();
+      return copy.reverse();
     }
 
     return {
