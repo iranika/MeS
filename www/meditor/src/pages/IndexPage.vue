@@ -2,20 +2,31 @@
   <q-page class="flex justify-center">
     <q-card style="width: 98%;">
       <q-card-section>
-        <table border="1">
-          <tr class="">
+        <table border="1" class="font-geneikoburi">
+          <tr v-show="showComment">
             <td class="tate tr-sound" v-for="piece in reverse(result.body.pieces)" :key="piece"><div v-html="[piece.comments,piece.sound_note,piece.sound_position].filter(v=> v != '').join('<br>')"></div></td>
             <td class="tate tr-sound"><div>ト書き</div></td>
           </tr>
-          <tr class="">
+          <tr v-show="showChar">
             <td class="tate tr-chara" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.charactor }}</div></td>
             <td class="tate tr-chara"><div>人物</div></td>
           </tr>
-          <tr class="tr-serifu">
+          <tr v-show="showSerifu">
             <td class="tate tr-serifu" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.dialogue }}</div></td>
             <td class="tate tr-serifu"><div>セリフ</div></td>
           </tr>
+          <tr v-show="showWordNum">
+            <td class="tr-count" style="text-align:center;" v-for="piece in reverse(result.body.pieces)" :key="piece"><div>{{ piece.dialogue.length }}</div></td>
+            <td class="tate tr-count"><div>文字数</div></td>
+          </tr>
         </table>
+        <details>
+          <summary>表示設定▼</summary>
+          <q-checkbox size="xs" label="ト書き" v-model="showComment"></q-checkbox>
+          <q-checkbox size="xs" label="人物" v-model="showChar"></q-checkbox>
+          <q-checkbox size="xs" label="セリフ" v-model="showSerifu"></q-checkbox>
+          <q-checkbox size="xs" label="文字数" v-model="showWordNum"></q-checkbox>
+        </details>
         <!--
         <div class="fit row reverse no-wrap justify-start items-start content-end" style="overflow-x: auto;">
           <div>
@@ -62,24 +73,28 @@
   max-height: 300px;
   width: 100%;
   overflow-wrap:normal;
+  padding-top: 4px;
 }
 .tr-chara{
   height: 100px;
   max-height: 300px;
   width: 100%;
   overflow-wrap: break-word;
+  padding-top: 4px;
 }
 .tr-count{
-  height: 50px;
+  height: 60px;
   max-height: 300px;
   width: 100%;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  padding-top: 4px;
 }
 .tr-sound{
   height: 150px;
   max-height: 300px;
   width: 100%;
   overflow-wrap: break-word;
+  padding-top: 4px;
 }
 .tate {
   writing-mode: vertical-rl;
@@ -167,7 +182,11 @@ export default defineComponent({
       text,
       parser,
       result,
-      reverse
+      reverse,
+      showChar: ref(true),
+      showSerifu: ref(true),
+      showWordNum: ref(true),
+      showComment: ref(true)
     };
   }
 });
