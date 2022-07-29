@@ -2,15 +2,14 @@ pub mod mes;
 #[cfg(all(target_os = "windows", not(target_arch = "wasm32")))]
 use self::mes as native;
 
-#[cfg(not(any(target_os = "windows", target_arch = "wasm32")))]
-mod mes;
-#[cfg(not(any(target_os = "windows", target_arch = "wasm32")))]
-use self::mes as native;
-
 #[cfg(target_arch = "wasm32")]
 mod wasm;
 #[cfg(target_arch = "wasm32")]
 use self::wasm as native;
+
+#[cfg(not(any(target_os = "windows", target_arch = "wasm32")))]
+use self::mes as native;
+
 
 #[inline(always)]
 pub fn parseMeSToJson(text: &str) -> String {
