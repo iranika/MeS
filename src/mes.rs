@@ -138,7 +138,7 @@ pub(crate) fn parseMeS(text: &str) -> Medo {
     //HeaderとBodyに分離
     let mut rawMedo = parseRawMedo(text);
     rawMedo.doflat();
-    println!("{}",rawMedo.body);
+    //println!("{}",rawMedo.body);
     //rawMedo.body = RawMedo::toflat_DialogueString(&(rawMedo.body));
     //Headerのパース
     //Bodyのパース
