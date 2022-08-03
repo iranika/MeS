@@ -5,6 +5,8 @@ use std::fs;
 #[cfg(test)]
 mod mes_unit_tests {
     use std::{result, borrow::Borrow, fs::create_dir};
+
+    use crate::mes::{MeSConfig, CountConfig};
     #[test]
     fn test_counter(){
         let text = std::fs::read_to_string("tests/SampleMimeyScript.txt").unwrap();
@@ -30,6 +32,17 @@ mod mes_unit_tests {
         let mut rawMedo = crate::mes::parseRawMedo(&text);
 
         println!("header: {:?}", rawMedo.header);
+    }
+
+    #[test]
+    fn test_countDialogueWordToJsonWithConf(){
+        let mut text = std::fs::read_to_string("tests/IgnoreStringSample.txt").unwrap();
+        let text2 = text.clone();
+        let result = crate::mes::countDialogueWordToJson(&text);
+        let iresult = crate::mes::countDialogueWordToJsonWithConf(text2, crate::mes::get_defaultConfig());
+        println!("result{}", result);
+        println!("iresult{}", iresult);
+        
     }
 
 }

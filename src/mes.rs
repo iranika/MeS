@@ -4,6 +4,34 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
+
+/* MeS Config関連のコード */
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MeSConfig{
+    name: String,
+    pub counter: CountConfig
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CountConfig{
+    pub ignore_char: Vec<String>
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ChatConfig{
+
+}
+
+pub fn get_defaultConfig()->MeSConfig{
+    return MeSConfig {
+        name: "default".to_string(),
+        counter: CountConfig {
+            ignore_char: vec![] 
+        }
+    }    
+}
+
+
+/* MeSのコア処理 */
 #[derive(Debug,PartialEq,Serialize, Deserialize)]
 pub struct MedoPiece {
     pub dialogue: String,
@@ -134,37 +162,11 @@ impl MedoBody {
     }
 }
 
-#[derive(Debug,PartialEq,Serialize, Deserialize)]
-pub struct WordCount{
-    charactor: String,
-    word_num: usize
-}
-
 
 pub fn parseMeSToJson(text: &str) -> String{
     let medo = parseMeS(text);
     let json = serde_json::to_string(&medo).unwrap();
     return json
-}
-
-pub fn countDialogueWordToJson(text: &str) -> String{
-    let medo = parseMeS(text);
-    //キャラクター毎にワード数を集計する
-    let mut word_counter: HashMap<String, WordCount> = HashMap::new(); 
-    medo.body.pieces.into_iter().for_each(|piece: MedoPiece|{
-        match word_counter.get_mut(&piece.charactor) {
-            Some(x) => {
-                //既存のきゃらの集計追加
-                x.word_num += piece.dialogue.graphemes(true).count();
-            }
-            None => {
-                //新規キャラの集計追加
-                word_counter.insert(piece.charactor.clone(), WordCount { charactor: piece.charactor.clone(), word_num: piece.dialogue.graphemes(true).count() });
-            }
-        }
-    });
-    let json = serde_json::to_string(&word_counter).unwrap();
-    return json;
 }
 
 pub(crate) fn parseMeS(text: &str) -> Medo {
@@ -182,8 +184,6 @@ pub(crate) fn parseMeS(text: &str) -> Medo {
         header: rawMedo.parseHeader().unwrap(),
         body: rawMedo.parseBody().unwrap()
     }
-
-    
 }
 
 pub fn parseRawMedo(text: &str) -> RawMedo {
@@ -237,4 +237,39 @@ pub fn parseMedoBody(_text: &str) -> MedoBody {
     let result: MedoBody = MedoBody { pieces: block };
 
     return result;
+}
+
+
+/* WordCount関連のコード */
+#[derive(Debug,PartialEq,Serialize, Deserialize)]
+pub struct WordCount{
+    charactor: String,
+    word_num: usize
+}
+pub fn countDialogueWordToJsonWithConf(mut text: String, conf: MeSConfig) -> String{
+    conf.counter.ignore_char.into_iter().for_each(|c|{
+        text = text.replace(&c, "");
+    });
+    let result = countDialogueWordToJson(&text);
+    return result
+}
+
+pub fn countDialogueWordToJson(text: &str) -> String{
+    let medo = parseMeS(text);
+    //キャラクター毎にワード数を集計する
+    let mut word_counter: HashMap<String, WordCount> = HashMap::new(); 
+    medo.body.pieces.into_iter().for_each(|piece: MedoPiece|{
+        match word_counter.get_mut(&piece.charactor) {
+            Some(x) => {
+                //既存のきゃらの集計追加
+                x.word_num += piece.dialogue.graphemes(true).count();
+            }
+            None => {
+                //新規キャラの集計追加
+                word_counter.insert(piece.charactor.clone(), WordCount { charactor: piece.charactor.clone(), word_num: piece.dialogue.graphemes(true).count() });
+            }
+        }
+    });
+    let json = serde_json::to_string(&word_counter).unwrap();
+    return json;
 }

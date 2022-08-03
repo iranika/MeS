@@ -72,7 +72,8 @@ $りんごを剥く音
             charactor: "ニカ（＠はキャラ名のデコレーター）".to_string(),
             sound_position: "正面（！はサウンドポジション）".to_string()
         };
-         */
+        */
+        
         let text = std::fs::read_to_string("tests/SampleMimeyScript.txt").unwrap();
         //println!("{}", text);
         let result = crate::mes::parseMeSToJson(&text);
