@@ -163,13 +163,13 @@ impl MedoBody {
 }
 
 
-pub fn parse_mes_to_json(text: &str) -> String{
+pub fn parseMeSToJson(text: &str) -> String{
     let medo = parse_mes(text);
     let json = serde_json::to_string(&medo).unwrap();
     return json
 }
 
-pub(crate) fn parse_mes(text: &str) -> Medo {
+pub fn parse_mes(text: &str) -> Medo {
     //HeaderとBodyに分離
     let mut rawMedo = parseRawMedo(text);
     //CommonScript等の差異を均す
@@ -246,15 +246,16 @@ pub struct WordCount{
     charactor: String,
     word_num: usize
 }
-pub fn count_dialogue_word_to_json_with_conf(mut text: String, conf: MeSConfig) -> String{
+
+pub fn countDialogueWordToJsonWithConf(mut text: String, conf: MeSConfig) -> String{
     conf.counter.ignore_char.into_iter().for_each(|c|{
         text = text.replace(&c, "");
     });
-    let result = count_dialogue_word_to_json(&text);
+    let result = countDialogueWordToJson(&text);
     return result
 }
 
-pub fn count_dialogue_word_to_json(text: &str) -> String{
+pub fn countDialogueWordToJson(text: &str) -> String{
     let medo = parse_mes(text);
     //キャラクター毎にワード数を集計する
     let mut word_counter: HashMap<String, WordCount> = HashMap::new(); 

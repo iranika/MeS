@@ -10,11 +10,11 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub fn parseMeSToJson(text: &str) -> String {
-    crate::mes::parse_mes_to_json(text)
+    crate::mes::parseMeSToJson(text)
 }
 #[wasm_bindgen]
 pub fn countDialogueWordToJson(text: &str) -> String {
-    crate::mes::count_dialogue_word_to_json(text)
+    crate::mes::countDialogueWordToJson(text)
 }
 
 #[wasm_bindgen]

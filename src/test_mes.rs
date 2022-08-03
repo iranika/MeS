@@ -6,7 +6,7 @@ mod mes_unit_tests {
     #[test]
     fn test_counter(){
         let text = std::fs::read_to_string("tests/SampleMimeyScript.txt").unwrap();
-        let result = crate::mes::count_dialogue_word_to_json(&text);
+        let result = crate::mes::countDialogueWordToJson(&text);
         println!("{}",result);
     }
     #[test]
@@ -34,8 +34,8 @@ mod mes_unit_tests {
     fn test_countDialogueWordToJsonWithConf(){
         let mut text: String = std::fs::read_to_string("tests/IgnoreStringSample.txt").unwrap();
         let text2 = text.clone();
-        let result = crate::mes::count_dialogue_word_to_json(&text);
-        let iresult = crate::mes::count_dialogue_word_to_json_with_conf(text2, crate::mes::get_default_config());
+        let result = crate::mes::countDialogueWordToJson(&text);
+        let iresult = crate::mes::countDialogueWordToJsonWithConf(text2, crate::mes::get_default_config());
         println!("result{}", result);
         println!("iresult{}", iresult);
         
