@@ -15,7 +15,27 @@ https://mes.iranika.info
 
 ## Download
 
-WIP: そのうち、ツールのダウンロード方法を書きます。
+### Install Using Scoop(Windows)
+
+[Scoop](https://scoop.sh/)はWindows向けのパッケージマネージャーです。  
+Scoopを使うとMeS CLIのダウンロードとアップデートが簡単にできます。  
+
+scoop本体のインストール(PowerShell)
+```ps1
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser # Optional: Needed to run a remote script the first time
+irm get.scoop.sh | iex
+```
+
+MeSのインストール
+```ps1
+scoop install https://raw.githubusercontent.com/iranika/MeS/main/scoop/mes.json
+
+```
+
+### Other
+
+実行ファイルとWASMは[Releaseページ](https://github.com/iranika/MeS/releases)に公開されています。
+必要に応じて、そこからダウンロードして使ってください。  
 
 ## Build
 
