@@ -21,7 +21,15 @@ mod mes_unit_tests {
         
         for ele in res.body.pieces {
             println!("\"{}\",\"{}\",\"{}\",\"{}\"", ele.charactor,ele.dialogue,ele.comments,ele.sound_note);            
-        }
-        
+        }   
     }
+    #[test]
+    fn test_parseRawMedo(){
+        //let text = std::fs::read_to_string("tests/AfterTheMonday/CommonScript.txt").unwrap();
+        let text = std::fs::read_to_string("tests/SampleCommonScript.txt").unwrap();
+        let mut rawMedo = crate::mes::parseRawMedo(&text);
+
+        println!("header: {:?}", rawMedo.header);
+    }
+
 }
