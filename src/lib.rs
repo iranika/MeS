@@ -17,15 +17,15 @@ use self::mes as native;
 
 #[inline(always)]
 pub fn parseMeSToJson(text: &str) -> String {
-    native::parseMeSToJson(text)
+    native::parse_mes_to_json(text)
 }
 
 #[inline(always)]
 pub fn countDialogueWordToJson(text: &str) -> String {
-    native::countDialogueWordToJson(text)
+    native::count_dialogue_word_to_json(text)
 }
 
 #[inline(always)]
 pub fn countDialogueWordToJsonWithConf(text: &str, mesconf: MeSConfig) -> String {
-    native::countDialogueWordToJsonWithConf(text.to_string(), mesconf)
+    native::count_dialogue_word_to_json_with_conf(text.to_string(), mesconf)
 }

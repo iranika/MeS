@@ -1,9 +1,8 @@
-use std::{path::{PathBuf, Path}, collections::HashMap, string};
+use std::{path::{PathBuf}};
 
 use clap::{Parser, Subcommand};
-use config::{Config, File, FileFormat};
-use mes::mes::{MeSConfig, get_defaultConfig};
-use serde::{Deserialize, Serialize, __private::de::FlatInternallyTaggedAccess};
+use config::{Config, File};
+use mes::mes::{MeSConfig, get_default_config};
 
 #[derive(Debug, Parser)]
 #[clap(name = "mes", author, about, version)]
@@ -50,15 +49,15 @@ enum Commands {
 fn main() {
     let cli = Cli::parse();
     //コンフィグの初期化
-    let mesConf: MeSConfig;
+    let mes_conf: MeSConfig;
     if std::path::Path::exists(std::path::Path::new(&cli.conf)){
-        mesConf = Config::builder()
+        mes_conf = Config::builder()
             .add_source(File::with_name(&cli.conf))
             .build()
             .unwrap()
             .try_deserialize::<MeSConfig>().unwrap();
     }else{
-        mesConf = get_defaultConfig();
+        mes_conf = get_default_config();
     }
 
     //サブコマンドの解析   
@@ -70,7 +69,7 @@ fn main() {
             do_parse(path);
         },
         Commands::Count { path } => {
-            do_count(path,mesConf);
+            do_count(path, mes_conf);
         },
         Commands::Config { conf } => {
             match conf {
@@ -78,7 +77,7 @@ fn main() {
                     do_config_create(cli.conf);
                 },
                 ConfigCommand::Show =>{
-                    do_config_show(cli.conf, mesConf);
+                    do_config_show(cli.conf, mes_conf);
                     //print!("do_config::show");
                 }
             }
@@ -97,8 +96,7 @@ fn do_parse(path: PathBuf){
 }
 
 fn do_chat(path: PathBuf){
-    let content = std::fs::read_to_string(path)
-        .expect("could not read file");
+    //let content = std::fs::read_to_string(path).expect("could not read file");
     println!("chatはまだ実装されていません.");
 }
 fn do_count(path: PathBuf, conf: MeSConfig){
@@ -109,7 +107,7 @@ fn do_count(path: PathBuf, conf: MeSConfig){
 
 fn do_config_create(path: String){
     //let filepath = PathBuf::from(&path);
-    let defConf = get_defaultConfig();
+    let defConf = get_default_config();
     //let json = r#"{"name": "sample","counter": {"ignore_char": ["a","b","c"]}}"#;
     let json = serde_json::to_string(&defConf).unwrap();
     //TODO: すでにファイルがある場合は上書きするか確認をする
