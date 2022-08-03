@@ -1,4 +1,4 @@
-use std::{iter::Iterator, vec, borrow::Borrow, collections::HashMap, hash::Hash};
+use std::{iter::Iterator, vec, collections::HashMap};
 extern crate regex;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -21,7 +21,7 @@ pub struct ChatConfig{
 
 }
 
-pub fn get_defaultConfig()->MeSConfig{
+pub fn get_default_config()->MeSConfig{
     return MeSConfig {
         name: "default".to_string(),
         counter: CountConfig {
@@ -70,29 +70,29 @@ impl RawMedo {
 
     pub fn doflat(&mut self) -> RawMedo{
         //NOTE:　フラットレイヤー
-        self.toflat_Dialogue();
+        self.toflat_dialogue();
         
         self.clone()
     }
-    pub fn toflat_Dialogue(&mut self)-> RawMedo{
-        self.body = RawMedo::toflat_DialogueString(&self.body.as_str());
+    pub fn toflat_dialogue(&mut self)-> RawMedo{
+        self.body = RawMedo::toflat_dialogue_string(&self.body.as_str());
         return self.clone()
     }
     //TODO: toflat_Dialogueとロジックを共有する
-    pub fn toflat_DialogueString(text: &str)-> String{
+    pub fn toflat_dialogue_string(text: &str)-> String{
         let re = Regex::new(r"\n{3,}").unwrap();
-        let nameRe = Regex::new(r"^.*「").unwrap();
+        let name_re = Regex::new(r"^.*「").unwrap();
         let raw = re.replace_all(text, "\n\n").to_string();
         let line: Vec<&str> = raw.split("\n").collect();
         let body = line
             .into_iter()
             .map(|mut x| -> String
                 {
-                    match nameRe.captures(x){
+                    match name_re.captures(x){
                         Some(val) => {
                             let name = val.get(0).unwrap().as_str().replace("「", "");
-                            let repName = name.clone() + "「";
-                            let dialogue = x.replace(&repName, "").replace("」", "");
+                            let rep_name = name.clone() + "「";
+                            let dialogue = x.replace(&rep_name, "").replace("」", "");
 
                             return format!("@{}\n{}\n", name, &dialogue)
                         },
@@ -108,17 +108,17 @@ impl RawMedo {
 }
 
 impl RawMedo {
-    pub fn parseHeader(&self) -> Option<MedoHeader>{
+    pub fn parse_header(&self) -> Option<MedoHeader>{
         return Some(MedoHeader{
             raw : "".to_string()
         })
     }
-    pub fn parseBody(&self) -> Option<MedoBody>{
+    pub fn parse_body(&self) -> Option<MedoBody>{
         let result = parseMedoBody(self.body.as_str());
         //println!("{:?}", result);
         return Some(result)
     }
-    pub fn parseToMedo(&mut self) -> Medo{
+    pub fn parse_to_medo(&mut self) -> Medo{
         
         Medo{
             header: MedoHeader { raw: self.header.to_string() },
@@ -146,10 +146,10 @@ impl MedoBody {
         //println!("{:?}", attrs);
         return attrs;
     }
-    fn get_dialogue(block: Vec<&str>, ignorePrefix: Vec<char>) -> Vec<String> {
+    fn get_dialogue(block: Vec<&str>, ignore_prefix: Vec<char>) -> Vec<String> {
         let dialogue = block
             .into_iter()
-            .filter(|x| ignorePrefix.iter().all(|&p| {
+            .filter(|x| ignore_prefix.iter().all(|&p| {
                 match x.chars().nth(0){
                     Some(v) => v != p,
                     None => false
@@ -164,12 +164,12 @@ impl MedoBody {
 
 
 pub fn parseMeSToJson(text: &str) -> String{
-    let medo = parseMeS(text);
+    let medo = parse_mes(text);
     let json = serde_json::to_string(&medo).unwrap();
     return json
 }
 
-pub(crate) fn parseMeS(text: &str) -> Medo {
+pub fn parse_mes(text: &str) -> Medo {
     //HeaderとBodyに分離
     let mut rawMedo = parseRawMedo(text);
     //CommonScript等の差異を均す
@@ -181,8 +181,8 @@ pub(crate) fn parseMeS(text: &str) -> Medo {
     //HeaderとBodyをMedoに結合
 
     return Medo {
-        header: rawMedo.parseHeader().unwrap(),
-        body: rawMedo.parseBody().unwrap()
+        header: rawMedo.parse_header().unwrap(),
+        body: rawMedo.parse_body().unwrap()
     }
 }
 
@@ -246,6 +246,7 @@ pub struct WordCount{
     charactor: String,
     word_num: usize
 }
+
 pub fn countDialogueWordToJsonWithConf(mut text: String, conf: MeSConfig) -> String{
     conf.counter.ignore_char.into_iter().for_each(|c|{
         text = text.replace(&c, "");
@@ -255,7 +256,7 @@ pub fn countDialogueWordToJsonWithConf(mut text: String, conf: MeSConfig) -> Str
 }
 
 pub fn countDialogueWordToJson(text: &str) -> String{
-    let medo = parseMeS(text);
+    let medo = parse_mes(text);
     //キャラクター毎にワード数を集計する
     let mut word_counter: HashMap<String, WordCount> = HashMap::new(); 
     medo.body.pieces.into_iter().for_each(|piece: MedoPiece|{

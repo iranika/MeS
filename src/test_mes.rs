@@ -1,12 +1,8 @@
 
-use crate::mes::*;
-use std::fs;
 
 #[cfg(test)]
 mod mes_unit_tests {
-    use std::{result, borrow::Borrow, fs::create_dir};
-
-    use crate::mes::{MeSConfig, CountConfig};
+    
     #[test]
     fn test_counter(){
         let text = std::fs::read_to_string("tests/SampleMimeyScript.txt").unwrap();
@@ -17,8 +13,8 @@ mod mes_unit_tests {
     fn test_flatDialogue(){
         let text = std::fs::read_to_string("tests/AfterTheMonday/CommonScript.txt").unwrap();
         let mut rawMedo = crate::mes::parseRawMedo(&text);
-        rawMedo.toflat_Dialogue();
-        let res = rawMedo.parseToMedo();
+        rawMedo.toflat_dialogue();
+        let res = rawMedo.parse_to_medo();
         //println!("{:?}", res.body.pieces);
         
         for ele in res.body.pieces {
@@ -36,10 +32,10 @@ mod mes_unit_tests {
 
     #[test]
     fn test_countDialogueWordToJsonWithConf(){
-        let mut text = std::fs::read_to_string("tests/IgnoreStringSample.txt").unwrap();
+        let mut text: String = std::fs::read_to_string("tests/IgnoreStringSample.txt").unwrap();
         let text2 = text.clone();
         let result = crate::mes::countDialogueWordToJson(&text);
-        let iresult = crate::mes::countDialogueWordToJsonWithConf(text2, crate::mes::get_defaultConfig());
+        let iresult = crate::mes::countDialogueWordToJsonWithConf(text2, crate::mes::get_default_config());
         println!("result{}", result);
         println!("iresult{}", iresult);
         
