@@ -1,6 +1,6 @@
 {
-    "version": "0.1.1",
-    "url": "https://github.com/iranika/MeS/releases/download/v0.1.1-alpha/MeS_v0.1.1-alpha_x86_64-pc-windows-gnu.zip",
+    "version": "0.1.2",
+    "url": "https://github.com/iranika/MeS/releases/download/v0.1.2-alpha/MeS_v0.1.2-alpha_x86_64-pc-windows-gnu.zip",
     "bin": "mes.exe",
-    "hash": "5b01270fab16ba29b4fe4d40de592ffbd3a760616ca08851426401890ba0d1f2"
+    "hash": "fec18d8ea2efe448a8ae0dcc04faac525d80ca2bf3001c8ef51d1ce42356a2d9"
 }
