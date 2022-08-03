@@ -1,8 +1,37 @@
-use std::{iter::Iterator, vec, borrow::Borrow};
+use std::{iter::Iterator, vec, borrow::Borrow, collections::HashMap, hash::Hash};
 extern crate regex;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use unicode_segmentation::UnicodeSegmentation;
 
+
+/* MeS Config関連のコード */
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MeSConfig{
+    name: String,
+    pub counter: CountConfig
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CountConfig{
+    pub ignore_char: Vec<String>
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ChatConfig{
+
+}
+
+pub fn get_defaultConfig()->MeSConfig{
+    return MeSConfig {
+        name: "default".to_string(),
+        counter: CountConfig {
+            ignore_char: vec![] 
+        }
+    }    
+}
+
+
+/* MeSのコア処理 */
 #[derive(Debug,PartialEq,Serialize, Deserialize)]
 pub struct MedoPiece {
     pub dialogue: String,
@@ -46,29 +75,7 @@ impl RawMedo {
         self.clone()
     }
     pub fn toflat_Dialogue(&mut self)-> RawMedo{
-        let re = Regex::new(r"\n{3,}").unwrap();
-        let nameRe = Regex::new(r"^.*「").unwrap();
-        let raw = re.replace_all(self.body.as_str(), "\n\n").to_string();
-        let line: Vec<&str> = raw.split("\n").collect();
-        self.body = line
-            .into_iter()
-            .map(|mut x| -> String
-                {
-                    match nameRe.captures(x){
-                        Some(val) => {
-                            let name = val.get(0).unwrap().as_str().replace("「", "");
-                            let repName = name.clone() + "「";
-                            let dialogue = x.replace(&repName, "").replace("」", "");
-
-                            return format!("@{}\n{}\n", name, &dialogue)
-                        },
-                        None => x.to_string()
-                    }
-                }
-            )
-            .collect::<Vec<String>>()
-            .join("\n");
-        
+        self.body = RawMedo::toflat_DialogueString(&self.body.as_str());
         return self.clone()
     }
     //TODO: toflat_Dialogueとロジックを共有する
@@ -94,9 +101,8 @@ impl RawMedo {
                 }
             )
             .collect::<Vec<String>>()
-            .join("\n");
-        
-        return body 
+            .join("\n");        
+        return body
     }
 
 }
@@ -118,52 +124,6 @@ impl RawMedo {
             header: MedoHeader { raw: self.header.to_string() },
             body: parseMedoBody(&self.body)
         }
-    }
-}
-
-pub fn parseMeSToJson(text: &str) -> String{
-    let medo = parseMeS(text);
-    let json = serde_json::to_string(&medo).unwrap();
-    return json
-}
-
-pub(crate) fn parseMeS(text: &str) -> Medo {
-    let dummy = MedoPiece {
-        dialogue: "あ、キタキタ。女の子二人を待たせるなんて、失礼だぞ。".to_string(),
-        comments: "comment text".to_string(),
-        sound_note: "駅前の音".to_string(),
-        charactor: "ニカ".to_string(),
-        sound_position: "1".to_string()
-    };
-    //HeaderとBodyに分離
-    let mut rawMedo = parseRawMedo(text);
-    rawMedo.doflat();
-    //println!("{}",rawMedo.body);
-    //rawMedo.body = RawMedo::toflat_DialogueString(&(rawMedo.body));
-    //Headerのパース
-    //Bodyのパース
-    //HeaderとBodyをMedoに結合
-
-    return Medo {
-        header: rawMedo.parseHeader().unwrap(),
-        body: rawMedo.parseBody().unwrap()
-    }
-
-    
-}
-
-pub fn parseRawMedo(text: &str) -> RawMedo {
-    let tmp = text.replace("\r\n", "\n");
-    let blocks: Vec<&str> = tmp.split("----\n").collect();
-    if blocks.len() == 1 {
-        return RawMedo {
-            header: "".to_string(),
-            body: blocks[0].to_string()
-        }
-    }
-    return RawMedo {
-        header: blocks[0].to_string(),
-        body: blocks[1].to_string()
     }
 }
 
@@ -200,27 +160,49 @@ impl MedoBody {
         //println!("{:?}", dialogue);
         return dialogue;
     }
-    fn toflat_Dialogue(block: Vec<&str>) -> Vec<String>{
-        //セリフ表記を均す
-        /* e.g.
-
-        ```
-        にか「これがセリフじゃ」
-        ```
-        ↓　Common表記からMeS表記に変換
-        ```
-        @にか
-        これがセリフじゃ
-        ```
-        */
-
-        return vec!["".to_string()]
-    }
 }
 
 
+pub fn parseMeSToJson(text: &str) -> String{
+    let medo = parseMeS(text);
+    let json = serde_json::to_string(&medo).unwrap();
+    return json
+}
+
+pub(crate) fn parseMeS(text: &str) -> Medo {
+    //HeaderとBodyに分離
+    let mut rawMedo = parseRawMedo(text);
+    //CommonScript等の差異を均す
+    rawMedo.doflat();
+    //println!("{}",rawMedo.body);
+    //rawMedo.body = RawMedo::toflat_DialogueString(&(rawMedo.body));
+    //Headerのパース
+    //Bodyのパース
+    //HeaderとBodyをMedoに結合
+
+    return Medo {
+        header: rawMedo.parseHeader().unwrap(),
+        body: rawMedo.parseBody().unwrap()
+    }
+}
+
+pub fn parseRawMedo(text: &str) -> RawMedo {
+    let tmp = text.replace("\r\n", "\n");
+    let blocks: Vec<&str> = tmp.split("----\n").collect();
+    if blocks.len() == 1 {
+        return RawMedo {
+            header: "".to_string(),
+            body: blocks[0].to_string()
+        }
+    }
+    return RawMedo {
+        header: blocks[0].to_string(),
+        body: blocks[1].to_string()
+    }
+}
 
 pub fn parseMedoBody(_text: &str) -> MedoBody {
+    
     let tmp = _text.replace("\r\n", "\n");
     //TODO: blocksに不要な空白行から生成されているblockは削除するようにする
     //TODO: 空白行にスペース等があった場合のためにトリミングをする
@@ -255,4 +237,39 @@ pub fn parseMedoBody(_text: &str) -> MedoBody {
     let result: MedoBody = MedoBody { pieces: block };
 
     return result;
+}
+
+
+/* WordCount関連のコード */
+#[derive(Debug,PartialEq,Serialize, Deserialize)]
+pub struct WordCount{
+    charactor: String,
+    word_num: usize
+}
+pub fn countDialogueWordToJsonWithConf(mut text: String, conf: MeSConfig) -> String{
+    conf.counter.ignore_char.into_iter().for_each(|c|{
+        text = text.replace(&c, "");
+    });
+    let result = countDialogueWordToJson(&text);
+    return result
+}
+
+pub fn countDialogueWordToJson(text: &str) -> String{
+    let medo = parseMeS(text);
+    //キャラクター毎にワード数を集計する
+    let mut word_counter: HashMap<String, WordCount> = HashMap::new(); 
+    medo.body.pieces.into_iter().for_each(|piece: MedoPiece|{
+        match word_counter.get_mut(&piece.charactor) {
+            Some(x) => {
+                //既存のきゃらの集計追加
+                x.word_num += piece.dialogue.graphemes(true).count();
+            }
+            None => {
+                //新規キャラの集計追加
+                word_counter.insert(piece.charactor.clone(), WordCount { charactor: piece.charactor.clone(), word_num: piece.dialogue.graphemes(true).count() });
+            }
+        }
+    });
+    let json = serde_json::to_string(&word_counter).unwrap();
+    return json;
 }
