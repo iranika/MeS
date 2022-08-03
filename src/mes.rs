@@ -244,7 +244,7 @@ pub fn parseMedoBody(_text: &str) -> MedoBody {
 #[derive(Debug,PartialEq,Serialize, Deserialize)]
 pub struct WordCount{
     charactor: String,
-    word_num: usize
+    word_count: usize
 }
 
 pub fn countDialogueWordToJsonWithConf(mut text: String, conf: MeSConfig) -> String{
@@ -263,11 +263,11 @@ pub fn countDialogueWordToJson(text: &str) -> String{
         match word_counter.get_mut(&piece.charactor) {
             Some(x) => {
                 //既存のきゃらの集計追加
-                x.word_num += piece.dialogue.graphemes(true).count();
+                x.word_count += piece.dialogue.graphemes(true).count();
             }
             None => {
                 //新規キャラの集計追加
-                word_counter.insert(piece.charactor.clone(), WordCount { charactor: piece.charactor.clone(), word_num: piece.dialogue.graphemes(true).count() });
+                word_counter.insert(piece.charactor.clone(), WordCount { charactor: piece.charactor.clone(), word_count: piece.dialogue.graphemes(true).count() });
             }
         }
     });
