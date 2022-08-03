@@ -1,7 +1,8 @@
-use std::{iter::Iterator, vec, borrow::Borrow};
+use std::{iter::Iterator, vec, borrow::Borrow, collections::HashMap, hash::Hash};
 extern crate regex;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug,PartialEq,Serialize, Deserialize)]
 pub struct MedoPiece {
@@ -154,31 +155,39 @@ impl MedoBody {
         //println!("{:?}", dialogue);
         return dialogue;
     }
-    fn toflat_Dialogue(block: Vec<&str>) -> Vec<String>{
-        //セリフ表記を均す
-        /* e.g.
-
-        ```
-        にか「これがセリフじゃ」
-        ```
-        ↓　Common表記からMeS表記に変換
-        ```
-        @にか
-        これがセリフじゃ
-        ```
-        */
-
-        return vec!["".to_string()]
-    }
 }
 
-
+#[derive(Debug,PartialEq,Serialize, Deserialize)]
+pub struct WordCount{
+    charactor: String,
+    word_num: usize
+}
 
 
 pub fn parseMeSToJson(text: &str) -> String{
     let medo = parseMeS(text);
     let json = serde_json::to_string(&medo).unwrap();
     return json
+}
+
+pub fn countDialogueWordToJson(text: &str) -> String{
+    let medo = parseMeS(text);
+    //キャラクター毎にワード数を集計する
+    let mut word_counter: HashMap<String, WordCount> = HashMap::new(); 
+    medo.body.pieces.into_iter().for_each(|piece: MedoPiece|{
+        match word_counter.get_mut(&piece.charactor) {
+            Some(x) => {
+                //既存のきゃらの集計追加
+                x.word_num += piece.dialogue.graphemes(true).count();
+            }
+            None => {
+                //新規キャラの集計追加
+                word_counter.insert(piece.charactor.clone(), WordCount { charactor: piece.charactor.clone(), word_num: piece.dialogue.graphemes(true).count() });
+            }
+        }
+    });
+    let json = serde_json::to_string(&word_counter).unwrap();
+    return json;
 }
 
 pub(crate) fn parseMeS(text: &str) -> Medo {

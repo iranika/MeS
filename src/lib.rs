@@ -1,4 +1,5 @@
 pub mod mes;
+mod test_mes;
 #[cfg(all(target_os = "windows", not(target_arch = "wasm32")))]
 use self::mes as native;
 
@@ -14,4 +15,9 @@ use self::mes as native;
 #[inline(always)]
 pub fn parseMeSToJson(text: &str) -> String {
     native::parseMeSToJson(text)
+}
+
+#[inline(always)]
+pub fn countDialogueWordToJson(text: &str) -> String {
+    native::countDialogueWordToJson(text)
 }

@@ -5,7 +5,7 @@ use std::fs;
 
 #[cfg(test)]
 mod mes_tests {
-    use std::{result, borrow::Borrow};
+    use std::{result, borrow::Borrow, fs::create_dir};
 
     /*
     use crate::mes::RawMedo;
@@ -76,10 +76,11 @@ $りんごを剥く音
         let text = std::fs::read_to_string("tests/SampleMimeyScript.txt").unwrap();
         //println!("{}", text);
         let result = crate::mes::parseMeSToJson(&text);
-        println!("{:?}", result);
+        println!("{}", result);
         
         //assert_eq!(result.body.pieces[0],dummy)
     }
+    
     //TODO: Medoヘッダーがただしくパースされていないっぽいのでテストを書く
     /*
     #[test]

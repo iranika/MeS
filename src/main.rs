@@ -47,13 +47,12 @@ enum Commands {
     Config{
         #[clap(subcommand)]
         conf: ConfigCommand
-    }
+    },
     //文字数カウンター
-    /*
-    Counter {
-        #
+    Count {
+        #[clap(parse(from_os_str))]
+        path: std::path::PathBuf,
     }
-    */
 }
 
 fn main() {
@@ -65,6 +64,9 @@ fn main() {
         },
         Commands::Parse { path } => {
             do_parse(path);
+        },
+        Commands::Count { path } => {
+            do_count(path);
         },
         Commands::Config { conf } => {
             match conf {
@@ -81,6 +83,24 @@ fn main() {
             println!("")
         }
     }
+}
+
+fn do_parse(path: PathBuf){
+    let content = std::fs::read_to_string(path).expect("could not read file.");
+    let json = mes::parseMeSToJson(&content);
+    print!("{}", json);
+
+}
+
+fn do_chat(path: PathBuf){
+    let content = std::fs::read_to_string(path)
+        .expect("could not read file");
+    println!("{}", content);
+}
+fn do_count(path: PathBuf){
+    let content = std::fs::read_to_string(path).expect("could not read file");
+    let json = mes::countDialogueWordToJson(&content);
+    println!("{}", json);
 }
 
 fn do_config_create(path: String){
@@ -108,15 +128,3 @@ fn do_config_show(path: String){
 
 }
 
-fn do_parse(path: PathBuf){
-    let content = std::fs::read_to_string(path).expect("could not read file.");
-    let json = mes::parseMeSToJson(&content);
-    print!("{}", json);
-
-}
-
-fn do_chat(path: PathBuf){
-    let content = std::fs::read_to_string(path)
-        .expect("could not read file");
-    println!("{:?}", content);
-}
