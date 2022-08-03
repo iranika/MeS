@@ -47,29 +47,7 @@ impl RawMedo {
         self.clone()
     }
     pub fn toflat_Dialogue(&mut self)-> RawMedo{
-        let re = Regex::new(r"\n{3,}").unwrap();
-        let nameRe = Regex::new(r"^.*「").unwrap();
-        let raw = re.replace_all(self.body.as_str(), "\n\n").to_string();
-        let line: Vec<&str> = raw.split("\n").collect();
-        self.body = line
-            .into_iter()
-            .map(|mut x| -> String
-                {
-                    match nameRe.captures(x){
-                        Some(val) => {
-                            let name = val.get(0).unwrap().as_str().replace("「", "");
-                            let repName = name.clone() + "「";
-                            let dialogue = x.replace(&repName, "").replace("」", "");
-
-                            return format!("@{}\n{}\n", name, &dialogue)
-                        },
-                        None => x.to_string()
-                    }
-                }
-            )
-            .collect::<Vec<String>>()
-            .join("\n");
-        
+        self.body = RawMedo::toflat_DialogueString(&self.body.as_str());
         return self.clone()
     }
     //TODO: toflat_Dialogueとロジックを共有する
@@ -95,9 +73,8 @@ impl RawMedo {
                 }
             )
             .collect::<Vec<String>>()
-            .join("\n");
-        
-        return body 
+            .join("\n");        
+        return body
     }
 
 }
@@ -191,15 +168,9 @@ pub fn countDialogueWordToJson(text: &str) -> String{
 }
 
 pub(crate) fn parseMeS(text: &str) -> Medo {
-    let dummy = MedoPiece {
-        dialogue: "あ、キタキタ。女の子二人を待たせるなんて、失礼だぞ。".to_string(),
-        comments: "comment text".to_string(),
-        sound_note: "駅前の音".to_string(),
-        charactor: "ニカ".to_string(),
-        sound_position: "1".to_string()
-    };
     //HeaderとBodyに分離
     let mut rawMedo = parseRawMedo(text);
+    //CommonScript等の差異を均す
     rawMedo.doflat();
     //println!("{}",rawMedo.body);
     //rawMedo.body = RawMedo::toflat_DialogueString(&(rawMedo.body));
@@ -231,6 +202,7 @@ pub fn parseRawMedo(text: &str) -> RawMedo {
 }
 
 pub fn parseMedoBody(_text: &str) -> MedoBody {
+    
     let tmp = _text.replace("\r\n", "\n");
     //TODO: blocksに不要な空白行から生成されているblockは削除するようにする
     //TODO: 空白行にスペース等があった場合のためにトリミングをする
