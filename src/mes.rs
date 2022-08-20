@@ -1,35 +1,12 @@
+pub mod builder;
+
 use std::{iter::Iterator, vec, collections::HashMap};
 extern crate regex;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
-
-/* MeS Config関連のコード */
-#[derive(Debug, Deserialize, Serialize)]
-pub struct MeSConfig{
-    name: String,
-    pub counter: CountConfig
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CountConfig{
-    pub ignore_char: Vec<String>
-}
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ChatConfig{
-
-}
-
-pub fn get_default_config()->MeSConfig{
-    return MeSConfig {
-        name: "default".to_string(),
-        counter: CountConfig {
-            ignore_char: vec![] 
-        }
-    }    
-}
-
+use self::builder::FlatDialogueConfig;
 
 /* MeSのコア処理 */
 #[derive(Debug,PartialEq,Serialize, Deserialize)]
@@ -68,20 +45,21 @@ pub struct RawMedo {
 impl RawMedo {
     //TODO: toflat->common スクリプトへの再変換ができるようにする
 
-    pub fn doflat(&mut self) -> RawMedo{
+    pub fn doflat(&mut self, conf: &builder::MeSBuilder) -> RawMedo{
         //NOTE:　フラットレイヤー
-        self.toflat_dialogue();
+        self.toflat_dialogue(conf);
         
         self.clone()
     }
-    pub fn toflat_dialogue(&mut self)-> RawMedo{
-        self.body = RawMedo::toflat_dialogue_string(&self.body.as_str());
+    pub fn toflat_dialogue(&mut self, conf: &builder::MeSBuilder)-> RawMedo{
+        self.body = RawMedo::toflat_dialogue_string(&self.body.as_str(), conf);
         return self.clone()
     }
     //TODO: toflat_Dialogueとロジックを共有する
-    pub fn toflat_dialogue_string(text: &str)-> String{
+    pub fn toflat_dialogue_string(text: &str, conf: &builder::MeSBuilder)-> String{
+        let flat_dialogue_config = &conf.mes_config.flat_dialogue_config;
         let re = Regex::new(r"\n{3,}").unwrap();
-        let name_re = Regex::new(r"^.*「").unwrap();
+        let name_re = Regex::new(format!("{}{}", r"^.*", flat_dialogue_config.start_str).as_str()).unwrap();
         let raw = re.replace_all(text, "\n\n").to_string();
         let line: Vec<&str> = raw.split("\n").collect();
         let body = line
@@ -90,9 +68,9 @@ impl RawMedo {
                 {
                     match name_re.captures(x){
                         Some(val) => {
-                            let name = val.get(0).unwrap().as_str().replace("「", "");
-                            let rep_name = name.clone() + "「";
-                            let dialogue = x.replace(&rep_name, "").replace("」", "");
+                            let name = val.get(0).unwrap().as_str().replace(flat_dialogue_config.start_str.as_str(), "");
+                            let rep_name = name.clone() + flat_dialogue_config.start_str.as_str();
+                            let dialogue = x.replace(&rep_name, "").replace(flat_dialogue_config.end_str.as_str(), "");
 
                             return format!("@{}\n{}\n", name, &dialogue)
                         },
@@ -173,7 +151,7 @@ pub fn parse_mes(text: &str) -> Medo {
     //HeaderとBodyに分離
     let mut rawMedo = parseRawMedo(text);
     //CommonScript等の差異を均す
-    rawMedo.doflat();
+    rawMedo.doflat(&builder::new());
     //println!("{}",rawMedo.body);
     //rawMedo.body = RawMedo::toflat_DialogueString(&(rawMedo.body));
     //Headerのパース
@@ -247,8 +225,8 @@ pub struct WordCount{
     word_count: usize
 }
 
-pub fn countDialogueWordToJsonWithConf(mut text: String, conf: MeSConfig) -> String{
-    conf.counter.ignore_char.into_iter().for_each(|c|{
+pub fn countDialogueWordToJsonWithConf(mut text: String, conf: builder::MeSBuilder) -> String{
+    conf.count_config.ignore_char.into_iter().for_each(|c|{
         text = text.replace(&c, "");
     });
     let result = countDialogueWordToJson(&text);
