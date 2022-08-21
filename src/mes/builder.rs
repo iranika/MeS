@@ -20,23 +20,6 @@ pub struct FlatDialogueConfig{
     
 }
 
-
-#[derive(Debug, Deserialize, Serialize, Default)]
-pub struct CountConfig{
-    pub ignore_char: Vec<String>
-}
-#[derive(Debug, Deserialize, Serialize, Default)]
-pub struct ChatConfig{
-
-}
-
-
-pub struct MeSBuilder{
-    pub mes_config: MeSConfig,
-    pub count_config: CountConfig,
-    pub chat_config: ChatConfig
-}
-
 impl Default for MeSBuilder {
     fn default() -> Self {
         //デフォルト設定の定義
@@ -61,6 +44,23 @@ impl Default for MeSBuilder {
         }
     }
 }
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct CountConfig{
+    pub ignore_char: Vec<String>
+}
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct ChatConfig{
+
+}
+
+
+pub struct MeSBuilder{
+    pub mes_config: MeSConfig,
+    pub count_config: CountConfig,
+    pub chat_config: ChatConfig
+}
+
 
 impl MeSBuilder {
     fn parseRawMedo(self: &Self, text: &str) -> RawMedo{
@@ -90,8 +90,9 @@ impl MeSBuilder {
         //parse_mes(mes_text)
 
     }
-    pub fn parse_to_jsonstr(mes_text: &str) -> String{
-        String::from("")
+    pub fn parse_to_jsonstr(self: &Self, mes_text: &str) -> String{
+        let medo = self.parse(mes_text);
+        serde_json::to_string(&medo).unwrap()
     }
 }
 
@@ -109,6 +110,7 @@ mod builder_test{
 
     use super::MeSBuilder;
 
+    //TODO: メジャーバージョンリリース時にテストデータを固定していく
 
     #[test]
     fn test_parseRawMedo(){
@@ -128,7 +130,14 @@ mod builder_test{
         println!("<header>{:?}</header>", medo.header);
         println!("<body>{:?}</body>", medo.body);
         
+    }
 
+    #[test]
+    fn test_parse_to_jsonstr(){
+        let text = std::fs::read_to_string("tests/SampleCommonScript.txt").unwrap();
+        let json = crate::builder::new().parse_to_jsonstr(&text);
+
+        println!("{}", json);
     }
 
 }
