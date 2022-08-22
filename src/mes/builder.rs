@@ -20,6 +20,23 @@ pub struct FlatDialogueConfig{
     
 }
 
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct CountConfig{
+    pub ignore_char: Vec<String>
+}
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct ChatConfig{
+
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MeSBuilder{
+    pub mes_config: MeSConfig,
+    pub count_config: CountConfig,
+    pub chat_config: ChatConfig
+}
+
 impl Default for MeSBuilder {
     fn default() -> Self {
         //デフォルト設定の定義
@@ -44,23 +61,6 @@ impl Default for MeSBuilder {
         }
     }
 }
-
-#[derive(Debug, Deserialize, Serialize, Default)]
-pub struct CountConfig{
-    pub ignore_char: Vec<String>
-}
-#[derive(Debug, Deserialize, Serialize, Default)]
-pub struct ChatConfig{
-
-}
-
-
-pub struct MeSBuilder{
-    pub mes_config: MeSConfig,
-    pub count_config: CountConfig,
-    pub chat_config: ChatConfig
-}
-
 
 impl MeSBuilder {
     fn parseRawMedo(self: &Self, text: &str) -> RawMedo{
