@@ -6,7 +6,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
-use self::builder::FlatDialogueConfig;
+use self::builder::{FlatDialogueConfig, MeSBuilder};
 use std::default;
 
 /* MeSのコア処理 */
@@ -101,22 +101,21 @@ impl RawMedo {
             raw : "".to_string()
         })
     }
-    pub fn parse_body(&self) -> Option<MedoBody>{
-        let result = parseMedoBody(self.body.as_str());
+    pub fn parse_body(&self, conf: &MeSBuilder) -> Option<MedoBody>{
+        let result = parseMedoBody(self.body.as_str(), conf);
         //println!("{:?}", result);
         return Some(result)
     }
-    pub fn parse_to_medo(&mut self) -> Medo{
-        
+    pub fn parse_to_medo(&mut self, conf: builder::MeSBuilder) -> Medo{
         Medo{
             header: MedoHeader { raw: self.header.to_string() },
-            body: parseMedoBody(&self.body)
+            body: parseMedoBody(&self.body, &conf)
         }
     }
 }
 
 impl MedoBody {
-    fn get_attribute(block: Vec<&str>, prefix: Vec<char>) -> Vec<String> {
+    fn get_attribute(block: Vec<&str>, prefix: &Vec<char>) -> Vec<String> {
         let attrs: Vec<String> = block
             .into_iter()
             .filter(|x| prefix.iter().any(|&p| {
@@ -134,7 +133,7 @@ impl MedoBody {
         //println!("{:?}", attrs);
         return attrs;
     }
-    fn get_dialogue(block: Vec<&str>, ignore_prefix: Vec<char>) -> Vec<String> {
+    fn get_dialogue(block: Vec<&str>, ignore_prefix: &Vec<char>) -> Vec<String> {
         let dialogue = block
             .into_iter()
             .filter(|x| ignore_prefix.iter().all(|&p| {
@@ -151,17 +150,17 @@ impl MedoBody {
 }
 
 
-pub fn parseMeSToJson(text: &str) -> String{
-    let medo = parse_mes(text);
+pub fn parseMeSToJson(text: &str, conf: &MeSBuilder) -> String{
+    let medo = parse_mes(text, conf);
     let json = serde_json::to_string(&medo).unwrap();
     return json
 }
 
-pub fn parse_mes(text: &str) -> Medo {
+pub fn parse_mes(text: &str, conf: &MeSBuilder) -> Medo {
     //HeaderとBodyに分離
-    let mut rawMedo = parseRawMedo(text);
+    let mut rawMedo = parseRawMedo(text, &builder::new());
     //CommonScript等の差異を均す
-    rawMedo.doflat(&builder::new());
+    rawMedo.doflat(conf);
     //println!("{}",rawMedo.body);
     //rawMedo.body = RawMedo::toflat_DialogueString(&(rawMedo.body));
     //Headerのパース
@@ -170,13 +169,13 @@ pub fn parse_mes(text: &str) -> Medo {
 
     return Medo {
         header: rawMedo.parse_header().unwrap(),
-        body: rawMedo.parse_body().unwrap()
+        body: rawMedo.parse_body(conf).unwrap()
     }
 }
 
-pub fn parseRawMedo(text: &str) -> RawMedo {
+pub fn parseRawMedo(text: &str, conf: &MeSBuilder) -> RawMedo {
     let tmp = text.replace("\r\n", "\n");
-    let blocks: Vec<&str> = tmp.split("----\n").collect();
+    let blocks: Vec<&str> = tmp.split(conf.mes_config.header_delimiter.as_str()).collect();
     if blocks.len() == 1 {
         return RawMedo {
             header: "".to_string(),
@@ -189,26 +188,40 @@ pub fn parseRawMedo(text: &str) -> RawMedo {
     }
 }
 
-pub fn parseMedoBody(_text: &str) -> MedoBody {
+pub fn parseMedoBody(_text: &str, conf: &builder::MeSBuilder) -> MedoBody {
     
     let tmp = _text.replace("\r\n", "\n");
     //TODO: blocksに不要な空白行から生成されているblockは削除するようにする
     //TODO: 空白行にスペース等があった場合のためにトリミングをする
-    let blocks: Vec<&str> = tmp.split("\n\n").collect();
-    //println!("blocks{:?}", blocks);
+    let blocks: Vec<&str> = tmp.split(conf.mes_config.medo_piece_config.block_delimiter.as_str()).collect();
+    //println!("blocks{:?}", blocks);        
+    //設定を破壊されたくないので一旦コピーしてしまう
+    let decorator = conf.mes_config.medo_piece_config.decorator.clone();
+    let ignore_prefix = vec![
+        decorator.comments,
+        decorator.sound_note,
+        decorator.charactor,
+        decorator.sound_position,
+        decorator.timing
+    ].concat();
+
+    let mpc = &conf.mes_config.medo_piece_config;
+
     let block = blocks
         .into_iter()
         .map(|x| -> MedoPiece {
             let lines: Vec<&str> = x.split("\n").collect::<Vec<&str>>();
             let dialogue = MedoBody::get_dialogue(
                 lines.clone(),
-                vec!['#', '＃', '$', '＄', '@', '＠', '!', '！']
+                &ignore_prefix
             ).join("\n"); //MedoBody::get_comments(lines).join(",");
-            let comments = MedoBody::get_attribute(lines.clone(), vec!['#', '＃']).join(","); //MedoBody::get_comments(lines).join(",");
-            let sound_note = MedoBody::get_attribute(lines.clone(), vec!['$', '＄']).join(",");
-            let charactor = MedoBody::get_attribute(lines.clone(), vec!['@', '＠']).join(",");
-            //println!("{:?}", charactor);
-            let sound_position = MedoBody::get_attribute(lines.clone(), vec!['!', '！']).join(",");
+            let comments = MedoBody::get_attribute(
+                    lines.clone(),
+                    &mpc.decorator.comments).join(","); //MedoBody::get_comments(lines).join(",");
+            let sound_note = MedoBody::get_attribute(lines.clone(), &mpc.decorator.sound_note).join(",");
+            let charactor = MedoBody::get_attribute(lines.clone(), &mpc.decorator.charactor).join(",");
+            let sound_position = MedoBody::get_attribute(lines.clone(), &mpc.decorator.sound_position).join(",");
+            let timing = MedoBody::get_attribute(lines.clone(), &mpc.decorator.timing).join(",");
             
             return MedoPiece {
                 dialogue: dialogue,
@@ -216,6 +229,7 @@ pub fn parseMedoBody(_text: &str) -> MedoBody {
                 sound_note: sound_note,
                 charactor: charactor,
                 sound_position: sound_position,
+                timing: timing,
                 ..Default::default()
             };
             //println!("{:?}",&result);
@@ -236,16 +250,16 @@ pub struct WordCount{
     word_count: usize
 }
 
-pub fn countDialogueWordToJsonWithConf(mut text: String, conf: builder::MeSBuilder) -> String{
-    conf.count_config.ignore_char.into_iter().for_each(|c|{
-        text = text.replace(&c, "");
+pub fn countDialogueWordToJsonWithConf(mut text: String, conf: &MeSBuilder) -> String{
+    conf.count_config.ignore_char.iter().for_each(|c|{
+        text = text.replace(c, "");
     });
-    let result = countDialogueWordToJson(&text);
+    let result = countDialogueWordToJson(&text, conf);
     return result
 }
 
-pub fn countDialogueWordToJson(text: &str) -> String{
-    let medo = parse_mes(text);
+pub fn countDialogueWordToJson(text: &str, conf: &MeSBuilder) -> String{
+    let medo = parse_mes(text, conf);
     //キャラクター毎にワード数を集計する
     let mut word_counter: HashMap<String, WordCount> = HashMap::new(); 
     medo.body.pieces.into_iter().for_each(|piece: MedoPiece|{

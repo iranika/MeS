@@ -104,7 +104,7 @@ fn do_chat(path: PathBuf){
 }
 fn do_count(path: PathBuf, conf: MeSBuilder){
     let content = std::fs::read_to_string(path).expect("could not read file");
-    let json = mes::mes::countDialogueWordToJsonWithConf(content, conf);
+    let json = mes::mes::countDialogueWordToJsonWithConf(content, &conf);
     println!("{}", json);
 }
 

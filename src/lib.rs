@@ -1,3 +1,5 @@
+use mes::builder::MeSBuilder;
+
 macro_rules! if_wasm {
     ($($item:item)*) => {$(
         #[cfg(target_arch = "wasm32")]
@@ -16,19 +18,16 @@ if_hyper! {
     pub mod mes;
 
     mod test_mes;
-    #[cfg(not(target_arch = "wasm32"))]
-    use native::builder;
-    
-    #[cfg(all(target_os = "windows", not(target_arch = "wasm32")))]
-    use self::mes as native;
+    use mes::builder;
+
     #[inline(always)]
     pub fn parseMeSToJson(text: &str) -> String {
-        native::parseMeSToJson(text)
+        mes::parseMeSToJson(text, &builder::new())
     }
     
     #[inline(always)]
     pub fn countDialogueWordToJson(text: &str) -> String {
-        native::countDialogueWordToJson(text)
+        mes::countDialogueWordToJson(text, &builder::new())
     }
     
 }

@@ -17,20 +17,40 @@ pub struct MeSConfig{
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MedoPieceConfig {
+    pub block_delimiter: String,
+    //以下、アトリビュートのメンバ
+    pub decorator: MedoPieceDecorator,
+}
+
+impl Default for MedoPieceConfig{
+    fn default() -> Self {
+        Self { 
+            block_delimiter: "\n\n".to_string(),
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct MedoPieceDecorator {
     pub dialogue: Vec<char>,
     pub comments: Vec<char>,
     pub sound_note: Vec<char>,
     pub charactor: Vec<char>,
     pub sound_position: Vec<char>,
+    pub timing: Vec<char>
 }
-impl Default for MedoPieceConfig {
+
+impl Default for MedoPieceDecorator {
     fn default() -> Self {
         Self {
+            //以下、アトリビュートのメンバ
             dialogue: vec![],
             comments: vec!['#','＃'], 
             sound_note: vec!['$','＄'],
             charactor: vec!['@','＠'],
             sound_position: vec!['!','！'],
+            timing: vec!['&','＆'],
             ..Default::default()
         }
     }
@@ -87,18 +107,7 @@ impl Default for MeSBuilder {
 
 impl MeSBuilder {
     fn parseRawMedo(self: &Self, text: &str) -> RawMedo{
-        let tmp = text.replace("\r\n", "\n");
-        let blocks: Vec<&str> = tmp.split(self.mes_config.header_delimiter.as_str()).collect();
-        if blocks.len() == 1 {
-            return RawMedo {
-                header: "".to_string(),
-                body: blocks[0].to_string()
-            }
-        }
-        return RawMedo {
-            header: blocks[0].to_string(),
-            body: blocks[1].to_string()
-        }
+        parseRawMedo(text, self)
     }
 }
 
@@ -108,7 +117,7 @@ impl MeSBuilder {
         rawMedo.doflat(self);
         return Medo{
             header: rawMedo.parse_header().unwrap(),
-            body: rawMedo.parse_body().unwrap()
+            body: rawMedo.parse_body(self).unwrap()
         }
         //parse_mes(mes_text)
 
