@@ -2,7 +2,7 @@ use std::default;
 
 use serde::{Deserialize, Serialize};
 
-use super::{parse_mes, RawMedo, parseRawMedo};
+use super::{parse_mes, RawMedo, parseRawMedo, MedoPiece};
 use crate::mes::{Medo};
 
 /* MeS Config関連のコード */
@@ -11,8 +11,31 @@ pub struct MeSConfig{
     pub name: String,
     /// Default is "----\n"
     pub header_delimiter: String,
-    pub flat_dialogue_config: FlatDialogueConfig
+    pub flat_dialogue_config: FlatDialogueConfig,
+    pub medo_piece_config: MedoPieceConfig
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MedoPieceConfig {
+    pub dialogue: Vec<char>,
+    pub comments: Vec<char>,
+    pub sound_note: Vec<char>,
+    pub charactor: Vec<char>,
+    pub sound_position: Vec<char>,
+}
+impl Default for MedoPieceConfig {
+    fn default() -> Self {
+        Self {
+            dialogue: vec![],
+            comments: vec!['#','＃'], 
+            sound_note: vec!['$','＄'],
+            charactor: vec!['@','＠'],
+            sound_position: vec!['!','！'],
+            ..Default::default()
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub struct FlatDialogueConfig{
     pub start_str: String,

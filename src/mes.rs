@@ -7,17 +7,27 @@ use serde::{Deserialize, Serialize};
 use unicode_segmentation::UnicodeSegmentation;
 
 use self::builder::FlatDialogueConfig;
+use std::default;
 
 /* MeSのコア処理 */
-#[derive(Debug,PartialEq,Serialize, Deserialize)]
+//NOTE: メンバを増減するときは、builder.rsのMedoPieceConfigも編集すること
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct MedoPiece {
     pub dialogue: String,
     pub comments: String,
     pub sound_note: String,
     pub charactor: String,
     pub sound_position: String,
+    pub timing: String
 }
 
+impl Default for MedoPiece {
+    fn default() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
+}
 
 #[derive(Debug,PartialEq,Serialize, Deserialize)]
 pub struct MedoBody {
@@ -206,6 +216,7 @@ pub fn parseMedoBody(_text: &str) -> MedoBody {
                 sound_note: sound_note,
                 charactor: charactor,
                 sound_position: sound_position,
+                ..Default::default()
             };
             //println!("{:?}",&result);
         })
