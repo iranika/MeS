@@ -22,12 +22,15 @@ if_hyper! {
 
     #[inline(always)]
     pub fn parseMeSToJson(text: &str) -> String {
-        mes::parseMeSToJson(text, &builder::new())
+        let conf = mes::builder::new();
+        let result = mes::parseMeSToJson(text, &conf);
+        result
     }
     
     #[inline(always)]
     pub fn countDialogueWordToJson(text: &str) -> String {
-        mes::countDialogueWordToJson(text, &builder::new())
+        let conf = mes::builder::new();
+        mes::countDialogueWordToJson(text, &conf)
     }
     
 }

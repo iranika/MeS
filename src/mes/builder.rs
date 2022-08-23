@@ -26,7 +26,7 @@ impl Default for MedoPieceConfig{
     fn default() -> Self {
         Self { 
             block_delimiter: "\n\n".to_string(),
-            ..Default::default()
+            decorator: Default::default()
         }
     }
 }
@@ -51,7 +51,6 @@ impl Default for MedoPieceDecorator {
             charactor: vec!['@','＠'],
             sound_position: vec!['!','！'],
             timing: vec!['&','＆'],
-            ..Default::default()
         }
     }
 }

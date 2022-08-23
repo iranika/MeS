@@ -158,9 +158,11 @@ pub fn parseMeSToJson(text: &str, conf: &MeSBuilder) -> String{
 
 pub fn parse_mes(text: &str, conf: &MeSBuilder) -> Medo {
     //HeaderとBodyに分離
-    let mut rawMedo = parseRawMedo(text, &builder::new());
+
+    let mut rawMedo = parseRawMedo(text, conf);
     //CommonScript等の差異を均す
     rawMedo.doflat(conf);
+
     //println!("{}",rawMedo.body);
     //rawMedo.body = RawMedo::toflat_DialogueString(&(rawMedo.body));
     //Headerのパース
@@ -204,7 +206,6 @@ pub fn parseMedoBody(_text: &str, conf: &builder::MeSBuilder) -> MedoBody {
         decorator.sound_position,
         decorator.timing
     ].concat();
-
     let mpc = &conf.mes_config.medo_piece_config;
 
     let block = blocks
@@ -222,7 +223,7 @@ pub fn parseMedoBody(_text: &str, conf: &builder::MeSBuilder) -> MedoBody {
             let charactor = MedoBody::get_attribute(lines.clone(), &mpc.decorator.charactor).join(",");
             let sound_position = MedoBody::get_attribute(lines.clone(), &mpc.decorator.sound_position).join(",");
             let timing = MedoBody::get_attribute(lines.clone(), &mpc.decorator.timing).join(",");
-            
+
             return MedoPiece {
                 dialogue: dialogue,
                 comments: comments,
@@ -230,7 +231,6 @@ pub fn parseMedoBody(_text: &str, conf: &builder::MeSBuilder) -> MedoBody {
                 charactor: charactor,
                 sound_position: sound_position,
                 timing: timing,
-                ..Default::default()
             };
             //println!("{:?}",&result);
         })
