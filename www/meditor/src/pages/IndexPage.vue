@@ -2,14 +2,23 @@
   <q-page class="flex justify-center">
     <q-card style="width: 98%;">
       <q-card-section>
-        <PrintDaihon :pieces="result.body.pieces" :showConf="showConf"></PrintDaihon>
-        <details>
-          <summary>表示設定▼</summary>
-          <q-checkbox size="xs" label="ト書き" v-model="showConf.showComment"></q-checkbox>
-          <q-checkbox size="xs" label="人物" v-model="showConf.showChara"></q-checkbox>
-          <q-checkbox size="xs" label="セリフ" v-model="showConf.showSerifu"></q-checkbox>
-          <q-checkbox size="xs" label="文字数" v-model="showConf.showWordNum"></q-checkbox>
-        </details>
+        <q-list>
+          <q-expansion-item
+            label="台本ビューの表示/非表示"
+            style="text-align: center;"
+            default-opened
+            expand-separator
+          >
+            <PrintDaihon :pieces="result.body.pieces" :showConf="showConf"></PrintDaihon>
+            <details>
+            <summary style="text-align: left;">表示設定▼</summary>
+              <q-checkbox size="xs" label="ト書き" v-model="showConf.showComment"></q-checkbox>
+              <q-checkbox size="xs" label="人物" v-model="showConf.showChara"></q-checkbox>
+              <q-checkbox size="xs" label="セリフ" v-model="showConf.showSerifu"></q-checkbox>
+              <q-checkbox size="xs" label="文字数" v-model="showConf.showWordNum"></q-checkbox>
+            </details>
+          </q-expansion-item>
+        </q-list>
         <!--
         <div class="fit row reverse no-wrap justify-start items-start content-end" style="overflow-x: auto;">
           <div>
@@ -140,7 +149,7 @@ export default defineComponent({
 
 `)
     const parser = ref((val: string)=>{
-      console.log("now loading wasm...")
+      console.log('now loading wasm...')
     })
     const result = ref(<Medo>{
       body:{
@@ -164,7 +173,8 @@ export default defineComponent({
       showChara: true,
       showSerifu: true,
       showWordNum: true,
-      showComment: true   
+      showComment: true,
+      showDialogue: true
     })
 
     return {
