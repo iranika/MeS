@@ -5,14 +5,22 @@
       <div>
         ここは音声ファイルに字幕を付与する実験のための部屋です。<br>
       </div>
+      <div>
+        音声ファイルの著作権は桃色CODE様にあります。<br>
+        iranikaは桃鳥様の許諾を得て利用させていただいております。<br>
+        http://momoirocode.web.fc2.com/ <br>
+      </div>
     </div>
     <div>
-      <video-controls></video-controls>
-    </div>
-    <div>
-      音声ファイルの著作権は桃色CODE様にあります。<br>
-      iranikaは桃鳥様の許諾を得て利用させていただいております。<br>
-      http://momoirocode.web.fc2.com/ <br>
+      <video-controls>
+        <template #body>
+          <source
+            src="/通話中si8.mp3"
+            type="audio/mp3"
+          />
+          <track kind="subtitles" src="通話中si8.vtt" srclang="ja" label="日本語" default />
+        </template>
+      </video-controls>
     </div>
     <!-- content -->
   </q-page>
@@ -32,9 +40,12 @@ video::cue {  /*疑似要素「::cue」を使います*/
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import VideoControls from 'src/components/VideoControls.vue';
+import VideoControls from 'src/components/VideoControls3.vue';
 
 export default defineComponent({
-    components: { VideoControls }
+    components: { VideoControls },
+    setup(){
+      return {}
+    }
 })
 </script>

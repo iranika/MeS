@@ -1,37 +1,37 @@
 <template>
-  <div>
-    <video playsinline width="500" height="100" controlslist="nofullscreen">
-      <source src="../assets/通話中si8.mp3" type="audio/mp3" />
-      <track label="日本語" kind="subtitles" srclang="ja" src="./通話中si8.vtt" type="text/vtt" default />
-    </video>
-
-    <ul id="video-controls" class="controls">
-      <li><button id="playpause" type="button">Play/Pause</button></li>
-      <li><button id="stop" type="button">Stop</button></li>
-      <li class="progress">
-        <progress id="progress" value="0" min="0">
-          <span id="progress-bar"></span>
-        </progress>
-      </li>
-      <li><button id="mute" type="button">Mute/Unmute</button></li>
-      <li><button id="volinc" type="button">Vol+</button></li>
-      <li><button id="voldec" type="button">Vol-</button></li>
-      <li><button id="fs" type="button">Fullscreen</button></li>
-    </ul>
-  </div>
+  <video-player
+    :sources="source"
+    controls
+    :loop="true"
+    :volume="0.6"
+    :tracks="tracks"
+    :audioTracks="tracks"
+  />
 </template>
 
-<script lang="ts">
+<script>
   import { defineComponent } from 'vue'
-  export default defineComponent({
-    // name: 'PageName'
-    setup(){
+  import { VideoPlayer } from '@videojs-player/vue'
+  import 'video.js/dist/video-js.css'
 
-      const video = document.getElementById
+  export default defineComponent({
+    components: {
+      VideoPlayer
+    },
+    setup(){
+      return {
+        tracks: [{
+          label: '日本語',
+          kind: 'captions',
+          srclang: 'ja',
+          src: '/通話中si8.vtt',
+          
+        }],
+        source: [{
+          src: '/通話中si8.mp3',
+          type: 'audio/mp3'
+        }]
+      }
     }
   })
-  </script>
-  
-<style>
-
-</style>
+</script>
