@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex justify-center">
-    <q-card style="width: 98%;">
+    <q-card style="width: 98%; margin-bottom: 30px;">
       <q-card-section>
         <q-list>
           <q-expansion-item
@@ -41,19 +41,34 @@
         <div style="">
           <q-input
             type="textarea"
-            v-model="text"
+            v-model="editorStore.db.text"
             autogrow
             filled
             @update:model-value="parser"
           ></q-input>
         </div>
+        <div>※テキストは自動で保存されます。</div>
+        <q-btn size="xs" label="テキストを初期化する" @click="editorStore.initEditorStore()"></q-btn>
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
-        <div>パース情報</div>
-        <div>
-          {{ result }}
-        </div>
+        <details>
+          <summary style="text-align: left;">(WIP)コンフィグの設定▼</summary>
+          <q-card-section>
+            ここにコンフィグの情報エディタを作る
+          </q-card-section>
+        </details>
+        <q-separator></q-separator>
+        <details>
+          <summary style="text-align: left;">デバッグ情報▼</summary>
+          <q-card-section>
+            <div>パース情報</div>
+            <div>
+              {{ result }}
+            </div>
+          </q-card-section>
+        </details>
+        <q-separator></q-separator>
       </q-card-section>
     </q-card>
   </q-page>
@@ -100,6 +115,7 @@
 import { defineComponent, ref } from 'vue';
 import init, { parseMeSToJson } from 'mes/mes';
 import PrintDaihon from '../components/PrintDaihon.vue';
+import { useEditorStore } from 'stores/editorStore';
 
 interface MedoPiece {
   dialogue: string;
@@ -122,32 +138,8 @@ export default defineComponent({
   components: { PrintDaihon },
   setup () {
     
-    const text = ref(`
-＠ニカ（＠はキャラ名のデコレーター）
-＃場所は駅前（＃はコメント全般のデコレーター）
-＄駅前の音（＄は音響指示のデコレーター）
-！正面（！はサウンドポジション）
-あ、キタキタ。女の子二人を待たせるなんて、失礼だぞ。
+    const editorStore = useEditorStore();
 
-＠こいと
-！正面
-そういうニカちゃんも、ついさっき来たばかりじゃないですか。
-
-＠ニカ
-＄少し離れてヒソヒソ声になる
-こういう時は待たせた弱みに漬け込んで、ランチを奢らせるのがだな…
-
-＠こいと
-前回もそうやって奢らせてたじゃないですか。今日はだめです。
-＃ちょっと叱る感じで（デコレーターは後置もOK）
-
-＠こいと
-それにしても久しぶりですね。この三人で会うのは何年ぶりでしたっけ？
-
-＠ニカ
-確か、最後に会ったのは富山に海鮮丼食べに行ったときだから、二年ぶりだね。
-
-`)
     const parser = ref((val: string)=>{
       console.log('now loading wasm...')
     })
@@ -156,12 +148,14 @@ export default defineComponent({
         pieces:<MedoPiece[]>[]
       }
     });
+
     init().then(()=>{
-      console.log(parseMeSToJson(text.value))
+      console.log(parseMeSToJson(editorStore.db.text))
       parser.value = (text: string) => {
-        result.value = JSON.parse(parseMeSToJson(text))
+        result.value = JSON.parse(parseMeSToJson(editorStore.db.text))
+        editorStore.commitEditorStore()
       }
-      parser.value(text.value)
+      parser.value(editorStore.db.text)
     })
 
     function reverse<T>(arr: Array<T>):Array<T>{
@@ -178,7 +172,7 @@ export default defineComponent({
     })
 
     return {
-      text,
+      editorStore,
       parser,
       result,
       reverse,

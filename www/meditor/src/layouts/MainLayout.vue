@@ -26,13 +26,13 @@
     >
       <q-list>
         <q-item-label header>lab</q-item-label>
-        <EssentialLink
+        <EssentialLinkTo
           v-for="link in labList"
           :key="link.title"
           v-bind="link"
         >
 
-        </EssentialLink>
+        </EssentialLinkTo>
       </q-list>
       <q-list>
         <q-item-label header>MeS</q-item-label>
@@ -53,14 +53,22 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
+import EssentialLinkTo from 'components/EssentialLinkTo.vue';
+
 import p from '../../package.json';
 
 const labList = [
   {
+    title: 'Meditor',
+    caption: 'MeSのテキストエディタ',
+    icon: 'code',
+    link: '/'
+  },
+  {
     title: '字幕実験',
     caption: '音声ファイルにMeSから字幕をつける実験',
     icon: 'chat',
-    link: '/#/sub'
+    link: '/sub'
   }
 ]
 
@@ -91,6 +99,7 @@ export default defineComponent({
 
   components: {
     EssentialLink,
+    EssentialLinkTo
   },
 
   setup () {
