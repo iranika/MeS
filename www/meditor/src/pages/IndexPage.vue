@@ -82,6 +82,13 @@
         </details>
         <q-separator></q-separator>
         <details>
+          <summary style="text-align: left;">VTTテキスト（タイミング情報）▼</summary>
+          <q-card-section>
+            <q-input type="textarea" readonly filled autogrow v-model="vtt_text"></q-input>
+          </q-card-section>
+        </details>
+        <q-separator></q-separator>
+        <details>
           <summary style="text-align: left;">(WIP)コンフィグの設定▼</summary>
           <q-card-section>
             <q-input
@@ -148,7 +155,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import init, { parseMeSToJson, countDialogueWordToJson, getDefaultConfigJson, parseMeSToJsonWithConf } from 'mes/mes';
+import init, { parseMeSToJson, getVTT, countDialogueWordToJson, getDefaultConfigJson, parseMeSToJsonWithConf } from 'mes/mes';
 import PrintDaihon from '../components/PrintDaihon.vue';
 import { useEditorStore } from 'stores/editorStore';
 
@@ -187,6 +194,7 @@ export default defineComponent({
 
     const counter = ref({});
     const ignore_char = ref('')
+    const vtt_text = ref('');
 
     init().then(()=>{
       console.log(parseMeSToJson(editorStore.db.text))
@@ -195,6 +203,7 @@ export default defineComponent({
         editorStore.commitEditorStore()
         counter.value = 
           Object.values(JSON.parse(countDialogueWordToJson(editorStore.db.text))) //JSON.parse(countDialogueWordToJson(editorStore.db.text))
+          vtt_text.value = getVTT(editorStore.db.text)
       }
       config.value = JSON.stringify(JSON.parse(getDefaultConfigJson()), null, 5)
       ignore_char.value = JSON.parse(config.value).count_config.ignore_char ?? 'なし'
@@ -224,7 +233,8 @@ export default defineComponent({
       reverse,
       showConf,
       counter,
-      ignore_char
+      ignore_char,
+      vtt_text
     };
   }
 });

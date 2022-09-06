@@ -164,6 +164,32 @@ pub fn getDefaultConfigJson() -> String {
     serde_json::to_string(&builder::new()).unwrap()
 }
 
+pub fn getVTT(text: &str, conf: &MeSBuilder) -> String{
+    let medo = conf.parse(text);
+    let vtt_list = medo.body.pieces.into_iter()
+    .map(|v|->String{
+        let timing = if v.timing != "" { v.timing }else{ "00:00:00.000 --> 00:00:00.000".to_string() };
+        let text = format!("{}\n{}", timing, v.dialogue).to_string();
+        text
+    })
+    .collect::<Vec<String>>();
+
+    vtt_list.join("\n\n")
+
+}
+
+pub fn getChat(text: &str, conf: &MeSBuilder) -> String {
+    let medo = conf.parse(text);
+    let mut colorHash:HashMap<String, String> = HashMap::new();
+    let chat_list = medo.body.pieces.into_iter()
+        .map(|v|->String{
+            //自動で色を割り振る
+            format!("<span style=\"color:{}\">{}: {}</span>", &v.charactor, &v.charactor, &v.dialogue)
+        }).collect::<Vec<String>>();
+    
+    chat_list.join("\n")
+}
+
 pub fn parse_mes(text: &str, conf: &MeSBuilder) -> Medo {
     //HeaderとBodyに分離
 
