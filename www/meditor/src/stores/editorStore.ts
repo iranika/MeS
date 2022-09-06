@@ -1,4 +1,6 @@
 import {reactive} from 'vue';
+import init, { parseMeSToJson } from 'mes/mes';
+
 //import axios from 'axios';
 /*
 export class Hoge {
@@ -38,13 +40,22 @@ export class EditorStore {
     
     private keys = {
         text: 'Text',
-        setting: 'Setting'
+        setting: 'Setting',
+        config: 'Config'
     }
 
     public db = reactive({
         text: String(window.localStorage.getItem(this.keys.text) ?? this.getInitText() ),
-        setting: String(window.localStorage.getItem(this.keys.setting) ?? '')
+        setting: String(window.localStorage.getItem(this.keys.setting) ?? ''),
+        config: String(window.localStorage.getItem(this.keys.config) ?? '')
     })
+    public parser = reactive((val: string)=>{
+        console.log('now loading wasm...')
+    })
+    public medo = reactive({
+
+    })
+  
 
     public toBoolean(boolstr: string): boolean{
         return boolstr.toLowerCase() === 'true';
@@ -52,6 +63,7 @@ export class EditorStore {
 
     public commitEditorStore(){
         window.localStorage.setItem(this.keys.text, this.db.text)
+        window.localStorage.setItem(this.keys.config, this.db.config)
     }
 
     private getInitText(){
@@ -64,6 +76,14 @@ export class EditorStore {
         //.localStorage.setItem(this.keys.text, this.db.text)
     }
 
+    public initMeS(){
+        init().then(()=>{
+            this.parser = (text: string) =>{
+                this.medo = parseMeSToJson
+            }
+        })
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor(){}
 
@@ -74,8 +94,6 @@ export class EditorStore {
         }
         return this.instance;
     }
-
-
 }
 
 export function useEditorStore():EditorStore{

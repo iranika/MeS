@@ -17,6 +17,10 @@
         <td class="tr-count" style="text-align:center;" v-for="piece in reverse(pieces)" :key="piece"><div>{{ piece.dialogue.length }}</div></td>
         <td class="tate tr-count"><div>文字数</div></td>
       </tr>
+      <tr v-show="showConf.showTiming">
+        <td class="tr-sound" style="text-align:center;" v-for="piece in reverse(pieces)" :key="piece"><div>{{ piece.timing }}</div></td>
+        <td class="tate tr-sound"><div>タイミング情報</div></td>
+      </tr>
     </table>
   </div>
 </template>

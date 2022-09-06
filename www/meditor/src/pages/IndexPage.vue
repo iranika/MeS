@@ -16,6 +16,7 @@
               <q-checkbox size="xs" label="人物" v-model="showConf.showChara"></q-checkbox>
               <q-checkbox size="xs" label="セリフ" v-model="showConf.showSerifu"></q-checkbox>
               <q-checkbox size="xs" label="文字数" v-model="showConf.showWordNum"></q-checkbox>
+              <q-checkbox size="xs" label="タイミング情報" v-model="showConf.showTiming"></q-checkbox>
             </details>
           </q-expansion-item>
         </q-list>
@@ -48,14 +49,48 @@
           ></q-input>
         </div>
         <div>※テキストは自動で保存されます。</div>
-        <q-btn size="xs" label="テキストを初期化する" @click="editorStore.initEditorStore()"></q-btn>
+        <div>MeS記法の詳細は右記を参照してください→<a href="https://iranika.github.io/mesdoc/" target="_blank">https://iranika.github.io/mesdoc/</a></div>
+        <details>
+          <summary>エディタの操作パネル▼</summary>
+          <div style="margin-top:5px;">
+            <q-btn size="xs" color="primary" label="テキストを初期化する" @click="editorStore.initEditorStore()"></q-btn>          
+          </div>
+        </details>
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
+        <div class="text-h6">各種情報エリア</div>
+        <details open>
+          <summary style="text-align: left;">キャラ別のセリフ文字数集計▼</summary>
+          <q-card-section>
+            <table border="">
+              <th>キャラクター</th>
+              <th>セリフ文字数</th>
+              <tbody>
+                <tr v-for="v in counter" :key="v">
+                  <td>{{ v.charactor }}</td>
+                  <td>{{ v.word_count }}</td>  
+                </tr>
+              </tbody>
+            </table>
+            <div>カウント除外の文字：{{ ignore_char.length == 0 ? "なし" : ignore_char}}</div>
+            <details>
+              <summary><div>生データ（JSON）▼</div></summary>
+              <div>{{ counter }}</div>
+            </details>
+          </q-card-section>
+        </details>
+        <q-separator></q-separator>
         <details>
           <summary style="text-align: left;">(WIP)コンフィグの設定▼</summary>
           <q-card-section>
-            ここにコンフィグの情報エディタを作る
+            <q-input
+              type="textarea"
+              v-model="config"
+              autogrow
+              filled
+              disable
+            ></q-input>
           </q-card-section>
         </details>
         <q-separator></q-separator>
@@ -113,7 +148,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import init, { parseMeSToJson } from 'mes/mes';
+import init, { parseMeSToJson, countDialogueWordToJson, getDefaultConfigJson, parseMeSToJsonWithConf } from 'mes/mes';
 import PrintDaihon from '../components/PrintDaihon.vue';
 import { useEditorStore } from 'stores/editorStore';
 
@@ -139,6 +174,7 @@ export default defineComponent({
   setup () {
     
     const editorStore = useEditorStore();
+    const config = ref('');
 
     const parser = ref((val: string)=>{
       console.log('now loading wasm...')
@@ -149,12 +185,20 @@ export default defineComponent({
       }
     });
 
+    const counter = ref({});
+    const ignore_char = ref('')
+
     init().then(()=>{
       console.log(parseMeSToJson(editorStore.db.text))
       parser.value = (text: string) => {
         result.value = JSON.parse(parseMeSToJson(editorStore.db.text))
         editorStore.commitEditorStore()
+        counter.value = 
+          Object.values(JSON.parse(countDialogueWordToJson(editorStore.db.text))) //JSON.parse(countDialogueWordToJson(editorStore.db.text))
       }
+      config.value = JSON.stringify(JSON.parse(getDefaultConfigJson()), null, 5)
+      ignore_char.value = JSON.parse(config.value).count_config.ignore_char ?? 'なし'
+      console.log(config.value)
       parser.value(editorStore.db.text)
     })
 
@@ -168,15 +212,19 @@ export default defineComponent({
       showSerifu: true,
       showWordNum: true,
       showComment: true,
-      showDialogue: true
+      showDialogue: true,
+      showTiming: false
     })
 
     return {
       editorStore,
+      config,
       parser,
       result,
       reverse,
-      showConf
+      showConf,
+      counter,
+      ignore_char
     };
   }
 });
