@@ -1,15 +1,25 @@
 <template>
   <q-page class="flex justify-center">
-    <q-card style="width: 98%;">
+    <q-card style="width: 98%; margin-bottom: 30px;">
       <q-card-section>
-        <PrintDaihon :pieces="result.body.pieces" :showConf="showConf"></PrintDaihon>
-        <details>
-          <summary>表示設定▼</summary>
-          <q-checkbox size="xs" label="ト書き" v-model="showConf.showComment"></q-checkbox>
-          <q-checkbox size="xs" label="人物" v-model="showConf.showChara"></q-checkbox>
-          <q-checkbox size="xs" label="セリフ" v-model="showConf.showSerifu"></q-checkbox>
-          <q-checkbox size="xs" label="文字数" v-model="showConf.showWordNum"></q-checkbox>
-        </details>
+        <q-list>
+          <q-expansion-item
+            label="台本ビューの表示/非表示"
+            style="text-align: center;"
+            default-opened
+            expand-separator
+          >
+            <PrintDaihon :pieces="result.body.pieces" :showConf="showConf"></PrintDaihon>
+            <details>
+            <summary style="text-align: left;">表示設定▼</summary>
+              <q-checkbox size="xs" label="ト書き" v-model="showConf.showComment"></q-checkbox>
+              <q-checkbox size="xs" label="人物" v-model="showConf.showChara"></q-checkbox>
+              <q-checkbox size="xs" label="セリフ" v-model="showConf.showSerifu"></q-checkbox>
+              <q-checkbox size="xs" label="文字数" v-model="showConf.showWordNum"></q-checkbox>
+              <q-checkbox size="xs" label="タイミング情報" v-model="showConf.showTiming"></q-checkbox>
+            </details>
+          </q-expansion-item>
+        </q-list>
         <!--
         <div class="fit row reverse no-wrap justify-start items-start content-end" style="overflow-x: auto;">
           <div>
@@ -32,19 +42,68 @@
         <div style="">
           <q-input
             type="textarea"
-            v-model="text"
+            v-model="editorStore.db.text"
             autogrow
             filled
             @update:model-value="parser"
           ></q-input>
         </div>
+        <div>※テキストは自動で保存されます。</div>
+        <div>MeS記法の詳細は右記を参照してください→<a href="https://iranika.github.io/mesdoc/" target="_blank">https://iranika.github.io/mesdoc/</a></div>
+        <details>
+          <summary>エディタの操作パネル▼</summary>
+          <div style="margin-top:5px;">
+            <q-btn size="xs" color="primary" label="テキストを初期化する" @click="editorStore.initEditorStore()"></q-btn>          
+          </div>
+        </details>
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
-        <div>パース情報</div>
-        <div>
-          {{ result }}
-        </div>
+        <div class="text-h6">各種情報エリア</div>
+        <details open>
+          <summary style="text-align: left;">キャラ別のセリフ文字数集計▼</summary>
+          <q-card-section>
+            <table border="">
+              <th>キャラクター</th>
+              <th>セリフ文字数</th>
+              <tbody>
+                <tr v-for="v in counter" :key="v">
+                  <td>{{ v.charactor }}</td>
+                  <td>{{ v.word_count }}</td>  
+                </tr>
+              </tbody>
+            </table>
+            <div>カウント除外の文字：{{ ignore_char.length == 0 ? "なし" : ignore_char}}</div>
+            <details>
+              <summary><div>生データ（JSON）▼</div></summary>
+              <div>{{ counter }}</div>
+            </details>
+          </q-card-section>
+        </details>
+        <q-separator></q-separator>
+        <details>
+          <summary style="text-align: left;">(WIP)コンフィグの設定▼</summary>
+          <q-card-section>
+            <q-input
+              type="textarea"
+              v-model="config"
+              autogrow
+              filled
+              disable
+            ></q-input>
+          </q-card-section>
+        </details>
+        <q-separator></q-separator>
+        <details>
+          <summary style="text-align: left;">デバッグ情報▼</summary>
+          <q-card-section>
+            <div>パース情報</div>
+            <div>
+              {{ result }}
+            </div>
+          </q-card-section>
+        </details>
+        <q-separator></q-separator>
       </q-card-section>
     </q-card>
   </q-page>
@@ -89,8 +148,9 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-import init, { parseMeSToJson } from 'mes/mes';
+import init, { parseMeSToJson, countDialogueWordToJson, getDefaultConfigJson, parseMeSToJsonWithConf } from 'mes/mes';
 import PrintDaihon from '../components/PrintDaihon.vue';
+import { useEditorStore } from 'stores/editorStore';
 
 interface MedoPiece {
   dialogue: string;
@@ -113,46 +173,33 @@ export default defineComponent({
   components: { PrintDaihon },
   setup () {
     
-    const text = ref(`
-＠ニカ（＠はキャラ名のデコレーター）
-＃場所は駅前（＃はコメント全般のデコレーター）
-＄駅前の音（＄は音響指示のデコレーター）
-！正面（！はサウンドポジション）
-あ、キタキタ。女の子二人を待たせるなんて、失礼だぞ。
+    const editorStore = useEditorStore();
+    const config = ref('');
 
-＠こいと
-！正面
-そういうニカちゃんも、ついさっき来たばかりじゃないですか。
-
-＠ニカ
-＄少し離れてヒソヒソ声になる
-こういう時は待たせた弱みに漬け込んで、ランチを奢らせるのがだな…
-
-＠こいと
-前回もそうやって奢らせてたじゃないですか。今日はだめです。
-＃ちょっと叱る感じで（デコレーターは後置もOK）
-
-＠こいと
-それにしても久しぶりですね。この三人で会うのは何年ぶりでしたっけ？
-
-＠ニカ
-確か、最後に会ったのは富山に海鮮丼食べに行ったときだから、二年ぶりだね。
-
-`)
     const parser = ref((val: string)=>{
-      console.log("now loading wasm...")
+      console.log('now loading wasm...')
     })
     const result = ref(<Medo>{
       body:{
         pieces:<MedoPiece[]>[]
       }
     });
+
+    const counter = ref({});
+    const ignore_char = ref('')
+
     init().then(()=>{
-      console.log(parseMeSToJson(text.value))
+      console.log(parseMeSToJson(editorStore.db.text))
       parser.value = (text: string) => {
-        result.value = JSON.parse(parseMeSToJson(text))
+        result.value = JSON.parse(parseMeSToJson(editorStore.db.text))
+        editorStore.commitEditorStore()
+        counter.value = 
+          Object.values(JSON.parse(countDialogueWordToJson(editorStore.db.text))) //JSON.parse(countDialogueWordToJson(editorStore.db.text))
       }
-      parser.value(text.value)
+      config.value = JSON.stringify(JSON.parse(getDefaultConfigJson()), null, 5)
+      ignore_char.value = JSON.parse(config.value).count_config.ignore_char ?? 'なし'
+      console.log(config.value)
+      parser.value(editorStore.db.text)
     })
 
     function reverse<T>(arr: Array<T>):Array<T>{
@@ -164,15 +211,20 @@ export default defineComponent({
       showChara: true,
       showSerifu: true,
       showWordNum: true,
-      showComment: true   
+      showComment: true,
+      showDialogue: true,
+      showTiming: false
     })
 
     return {
-      text,
+      editorStore,
+      config,
       parser,
       result,
       reverse,
-      showConf
+      showConf,
+      counter,
+      ignore_char
     };
   }
 });

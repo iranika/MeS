@@ -25,12 +25,17 @@
       bordered
     >
       <q-list>
-        <q-item-label
-          header
+        <q-item-label header>lab</q-item-label>
+        <EssentialLinkTo
+          v-for="link in labList"
+          :key="link.title"
+          v-bind="link"
         >
-          MeS
-        </q-item-label>
 
+        </EssentialLinkTo>
+      </q-list>
+      <q-list>
+        <q-item-label header>MeS</q-item-label>
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
@@ -48,7 +53,24 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
-import p from "../../package.json";
+import EssentialLinkTo from 'components/EssentialLinkTo.vue';
+
+import p from '../../package.json';
+
+const labList = [
+  {
+    title: 'Meditor',
+    caption: 'MeSのテキストエディタ',
+    icon: 'code',
+    link: '/'
+  },
+  {
+    title: '字幕実験',
+    caption: '音声ファイルにMeSから字幕をつける実験',
+    icon: 'chat',
+    link: '/sub'
+  }
+]
 
 const linksList = [
   {
@@ -68,14 +90,16 @@ const linksList = [
     caption: '@happy_packet',
     icon: 'chat',
     link: 'https://twitter.com/happy_packet'
-  }
+  },
+  
 ];
 
 export default defineComponent({
   name: 'MainLayout',
 
   components: {
-    EssentialLink
+    EssentialLink,
+    EssentialLinkTo
   },
 
   setup () {
@@ -87,7 +111,8 @@ export default defineComponent({
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
-      }
+      },
+      labList: labList,
     }
   }
 });

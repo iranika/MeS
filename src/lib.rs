@@ -1,32 +1,49 @@
-pub mod mes;
+use mes::builder::MeSBuilder;
 
-mod test_mes;
-
-#[cfg(not(target_arch = "wasm32"))]
-use native::MeSConfig;
-
-#[cfg(all(target_os = "windows", not(target_arch = "wasm32")))]
-use self::mes as native;
-
-#[cfg(target_arch = "wasm32")]
-mod wasm;
-#[cfg(target_arch = "wasm32")]
-use self::wasm as native;
-
-#[cfg(not(any(target_os = "windows", target_arch = "wasm32")))]
-use self::mes as native;
-
-#[inline(always)]
-pub fn parseMeSToJson(text: &str) -> String {
-    native::parseMeSToJson(text)
+macro_rules! if_wasm {
+    ($($item:item)*) => {$(
+        #[cfg(target_arch = "wasm32")]
+        $item
+    )*}
 }
 
-#[inline(always)]
-pub fn countDialogueWordToJson(text: &str) -> String {
-    native::countDialogueWordToJson(text)
+macro_rules! if_hyper {
+    ($($item:item)*) => {$(
+        #[cfg(not(target_arch = "wasm32"))]
+        $item
+    )*}
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn countDialogueWordToJsonWithConf(text: &str, mesconf: MeSConfig) -> String {
-    native::countDialogueWordToJsonWithConf(text.to_string(), mesconf)
+if_hyper! {
+    pub mod mes;
+
+    mod test_mes;
+    use mes::builder;
+
+    #[inline(always)]
+    pub fn parseMeSToJson(text: &str) -> String {
+        let conf = mes::builder::new();
+        let result = mes::parseMeSToJson(text, &conf);
+        result
+    }
+    
+    #[inline(always)]
+    pub fn countDialogueWordToJson(text: &str) -> String {
+        let conf = mes::builder::new();
+        mes::countDialogueWordToJson(text, &conf)
+    }
+    
 }
+
+if_wasm! {
+/*  extern crate wasm_bindgen;
+    use wasm_bindgen::prelude::*;
+    // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
+    // allocator.
+    #[cfg(feature = "wee_alloc")]
+    #[global_allocator]
+    static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT; */
+    pub mod mes;
+    pub mod wasm;
+}
+
