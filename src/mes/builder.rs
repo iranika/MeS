@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{parse_mes, RawMedo, parseRawMedo, MedoPiece};
 use crate::mes::{Medo};
+use config::{Config, File};
 
 /* MeS Config関連のコード */
 #[derive(Debug, Deserialize, Serialize, Default)]
@@ -128,16 +129,21 @@ impl MeSBuilder {
 }
 
 pub fn new()->MeSBuilder{
-    let builder:MeSBuilder = Default::default();
+    let builder: MeSBuilder = Default::default();
     builder
 }
 
+pub fn set_json_conf(json: &str)->MeSBuilder{
+    //TODO: JsonStringとのマージを実行できるようにする
+    let builder: MeSBuilder = serde_json::from_str(json).unwrap();
+    builder
+}
 
 
 #[cfg(test)]
 mod builder_test{
 
-    use crate::mes::RawMedo;
+    use crate::mes::{RawMedo, self};
 
     use super::MeSBuilder;
 
@@ -146,7 +152,7 @@ mod builder_test{
     #[test]
     fn test_parseRawMedo(){
         let text = std::fs::read_to_string("tests/SampleCommonScript.txt").unwrap();
-        let rawmedo: RawMedo = crate::builder::new().parseRawMedo(&text);
+        let rawmedo: RawMedo = crate::mes::builder::new().parseRawMedo(&text);
 
         println!("<header>{}</header>", rawmedo.header);
         println!("<body>{}</body>", rawmedo.body);
@@ -156,7 +162,7 @@ mod builder_test{
     #[test]
     fn test_parse(){
         let text = std::fs::read_to_string("tests/SampleCommonScript.txt").unwrap();
-        let medo = crate::builder::new().parse(&text);
+        let medo = crate::mes::builder::new().parse(&text);
 
         println!("<header>{:?}</header>", medo.header);
         println!("<body>{:?}</body>", medo.body);
@@ -166,9 +172,28 @@ mod builder_test{
     #[test]
     fn test_parse_to_jsonstr(){
         let text = std::fs::read_to_string("tests/SampleCommonScript.txt").unwrap();
-        let json = crate::builder::new().parse_to_jsonstr(&text);
+        let json = crate::mes::builder::new().parse_to_jsonstr(&text);
 
         println!("{}", json);
+    }
+
+    #[test]
+    fn test_parse_to_jsonstr_withconf(){
+        let text = std::fs::read_to_string("tests/SampleCommonScript.txt").unwrap();
+        let json = r#"
+{
+    "mes_config": {
+        "name": "",
+        "header_delimiter": "----\n",
+        "flat_dialogue_config": {
+        "start_str": "「",
+        "end_str": "」"
+        },
+    }
+}"#;
+        let djson = serde_json::to_string(&mes::builder::new()).unwrap();
+        let result = mes::builder::set_json_conf(&djson).parse_to_jsonstr(&text);
+        println!("{}", result);
     }
 
 }

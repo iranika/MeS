@@ -130,7 +130,7 @@ fn do_config_create(path: String){
 
 fn do_config_show(path: String, mesconf: MeSBuilder){
     
-    println!("{}", serde_json::to_string(&mesconf).unwrap());
+    println!("{}", serde_json::to_string_pretty(&mesconf).unwrap());
 
 }
 

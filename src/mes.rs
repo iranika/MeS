@@ -149,11 +149,19 @@ impl MedoBody {
     }
 }
 
-
+/* パース関連 */
 pub fn parseMeSToJson(text: &str, conf: &MeSBuilder) -> String{
     let medo = parse_mes(text, conf);
     let json = serde_json::to_string(&medo).unwrap();
     return json
+}
+
+pub fn parseMeSToJsonWithConf(text: &str, json: &str) -> String {
+    builder::set_json_conf(json).parse_to_jsonstr(text)
+}
+
+pub fn getDefaultConfigJson() -> String {
+    serde_json::to_string(&builder::new()).unwrap()
 }
 
 pub fn parse_mes(text: &str, conf: &MeSBuilder) -> Medo {
@@ -241,6 +249,8 @@ pub fn parseMedoBody(_text: &str, conf: &builder::MeSBuilder) -> MedoBody {
 
     return result;
 }
+
+
 
 
 /* WordCount関連のコード */
