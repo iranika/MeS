@@ -1,0 +1,40 @@
+{
+  "mes_config": {
+    "name": "",
+    "header_delimiter": "----\n",
+    "flat_dialogue_config": {
+      "start_str": "「",
+      "end_str": "」"
+    },
+    "medo_piece_config": {
+      "block_delimiter": "\n\n",
+      "decorator": {
+        "dialogue": [],
+        "comments": [
+          "#",
+          "＃"
+        ],
+        "sound_note": [
+          "$",
+          "＄"
+        ],
+        "charactor": [
+          "@",
+          "＠"
+        ],
+        "sound_position": [
+          "!",
+          "！"
+        ],
+        "timing": [
+          "&",
+          "＆"
+        ]
+      }
+    }
+  },
+  "count_config": {
+    "ignore_char": []
+  },
+  "chat_config": {}
+}

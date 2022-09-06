@@ -32,6 +32,10 @@ enum Commands {
         #[clap(parse(from_os_str))]
         path: std::path::PathBuf,
     },
+    Vtt{
+        #[clap(parse(from_os_str))]
+        path: std::path::PathBuf,
+    },
     /// WIP:チャット形式で出力します.
     Chat {
         #[clap(parse(from_os_str))]
@@ -71,6 +75,9 @@ fn main() {
         Commands::Parse { path } => {
             do_parse(path);
         },
+        Commands::Vtt { path } => {
+            do_vtt(path)
+        },
         Commands::Count { path } => {
             do_count(path, mes_conf);
         },
@@ -96,6 +103,12 @@ fn do_parse(path: PathBuf){
     let json = mes::parseMeSToJson(&content);
     print!("{}", json);
 
+}
+
+fn do_vtt(path: PathBuf){
+    let content = std::fs::read_to_string(path).expect("could not read file.");
+    let text = mes::getVTT(&content);
+    print!("{}", text);
 }
 
 fn do_chat(path: PathBuf){

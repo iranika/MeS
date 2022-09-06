@@ -7,6 +7,8 @@ use std::fs;
 mod mes_tests {
     use std::{result, borrow::Borrow, fs::create_dir};
 
+    use mes::mes::getChat;
+
     /*
     use crate::mes::RawMedo;
 
@@ -82,6 +84,21 @@ $りんごを剥く音
         //assert_eq!(result.body.pieces[0],dummy)
     }
     
+    #[test]
+    fn test_getvtt(){
+        let text = std::fs::read_to_string("tests/si8.txt").unwrap();
+        let result = crate::mes::mes::getVTT(&text, &mes::mes::builder::new());
+        println!("{}", result)
+    }
+
+    #[test]
+    fn test_getChat(){
+        let text = std::fs::read_to_string("tests/SampleCommonScript.txt").unwrap();
+        //println!("{}", text);
+        let result = crate::mes::mes::getChat(&text, &mes::mes::builder::new());
+        println!("{}", result);
+    }
+
     //TODO: Medoヘッダーがただしくパースされていないっぽいのでテストを書く
     /*
     #[test]
